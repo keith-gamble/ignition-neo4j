@@ -39,7 +39,7 @@
             <plugin>
                 <groupId>com.inductiveautomation.ignitionsdk</groupId>
                 <artifactId>ignition-maven-plugin</artifactId>
-                <version>1.1.0</version>
+                <version>1.1.1-SNAPSHOT</version>
 
                 <executions>
                     <execution>
@@ -47,6 +47,13 @@
                         <phase>package</phase>
                         <goals>
                             <goal>modl</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>postexecution</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>post</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -76,6 +83,8 @@
                     <moduleDescription>${module-description}</moduleDescription>
                     <moduleVersion>${project.version}</moduleVersion>
                     <requiredIgnitionVersion>${ignition-platform-version}</requiredIgnitionVersion>
+
+                    <gatewayAddress>http://localhost:80</gatewayAddress>
 
                     <hooks>
                         <hook>

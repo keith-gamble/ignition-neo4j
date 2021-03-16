@@ -21,7 +21,7 @@
         <ignition-platform-version>8.1.0-SNAPSHOT</ignition-platform-version>
         <ignition-sdk-version>${ignition-platform-version}</ignition-sdk-version>
         <module-name>Neo4J Driver</module-name>
-        <module-description>Adds a neo4J driver connection to the client and gateway</module-description>
+        <module-description>Adds a neo4J driver connector for the client and gateway</module-description>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>

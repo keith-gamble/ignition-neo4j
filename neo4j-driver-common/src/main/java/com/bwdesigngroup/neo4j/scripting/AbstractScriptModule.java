@@ -6,8 +6,6 @@ import com.inductiveautomation.ignition.common.script.hints.ScriptFunction;
 
 import org.neo4j.driver.*;
 
-import java.util.List;
-
 import static org.neo4j.driver.Values.parameters;
 
 public abstract class AbstractScriptModule implements App {
@@ -22,10 +20,6 @@ public abstract class AbstractScriptModule implements App {
     public int multiply(@ScriptArg("arg0") int arg0, @ScriptArg("arg1") int arg1) {
 
         return multiplyImpl(arg0, arg1);
-    }
-
-    public String helloWorld() {
-        return "Hi there!";
     }
 
     public String helloNode() {
