@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.bwdesigngroup.neo4j</groupId>
+    <artifactId>neo4j-driver</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>neo4j-driver-build</module>
+        <module>neo4j-driver-client</module>
+        <module>neo4j-driver-common</module>
+        <module>neo4j-driver-designer</module>
+        <module>neo4j-driver-gateway</module>
+    </modules>
+
+    <properties>
+        <ignition-platform-version>8.1.0-SNAPSHOT</ignition-platform-version>
+        <ignition-sdk-version>${ignition-platform-version}</ignition-sdk-version>
+        <module-name>Neo4J Driver</module-name>
+        <module-description>Adds a neo4J driver connection to the client and gateway</module-description>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>releases</id>
+            <url>https://nexus.inductiveautomation.com/repository/inductiveautomation-releases</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <!-- <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.2</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build> -->
+
+    <repositories>
+        <repository>
+            <id>releases</id>
+            <url>https://nexus.inductiveautomation.com/repository/inductiveautomation-releases</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </releases>
+        </repository>
+
+        <repository>
+            <id>snapshots</id>
+            <url>https://nexus.inductiveautomation.com/repository/inductiveautomation-snapshots</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+
+        <repository>
+            <id>thirdparty</id>
+            <url>https://nexus.inductiveautomation.com/repository/inductiveautomation-thirdparty</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+</project>
