@@ -14,9 +14,4 @@ public class ClientScriptModule extends AbstractScriptModule {
             App.class
         );
     }
-
-    @Override
-    protected int multiplyImpl(int arg0, int arg1) {
-        return rpc.multiply(arg0, arg1);
-    }
 }
