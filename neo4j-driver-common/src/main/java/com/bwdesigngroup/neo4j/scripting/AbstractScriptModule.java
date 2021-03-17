@@ -27,10 +27,10 @@ public abstract class AbstractScriptModule implements App {
 
     @Override
     @ScriptFunction(docBundlePrefix = "AbstractScriptModule")
-    public String cypherSelect(@ScriptArg("cypher") String cypher) throws Exception {
+    public Object cypherSelect(@ScriptArg("cypher") String cypher) throws Exception {
         DatabaseConnector connector = new DatabaseConnector();
         
-        String response = connector.selectTransaction(cypher);
+        Object response = connector.selectTransaction(cypher);
 
         connector.close();
         return response;

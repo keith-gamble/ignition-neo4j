@@ -22,12 +22,6 @@ public class DatabaseConnector implements AutoCloseable
         driver = GraphDatabase.driver( dbPath, AuthTokens.basic( dbUser, dbPass ) );
     }
 
-    @Override
-    public void close() throws Exception
-    {
-        driver.close();
-    }
-
     public void updateTransaction( final String cypher) 
     {
         try ( Session session = driver.session() )
@@ -40,14 +34,14 @@ public class DatabaseConnector implements AutoCloseable
     }
 
 
-    public String selectTransaction( final String cypher) 
+    public Object selectTransaction( final String cypher) 
     {
         try ( Session session = driver.session() )
         {
-            String response = session.writeTransaction( new TransactionWork<String>()
+            Object response = session.writeTransaction( new TransactionWork<Object>()
             {
                 @Override
-                public String execute( Transaction tx )
+                public Object execute( Transaction tx )
                 {
                     Result result = tx.run( cypher );
 
@@ -57,4 +51,11 @@ public class DatabaseConnector implements AutoCloseable
             return response;
         }
     }
+
+    @Override
+    public void close() throws Exception
+    {
+        driver.close();
+    }
+
 }
