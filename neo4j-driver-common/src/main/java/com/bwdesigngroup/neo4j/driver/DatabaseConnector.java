@@ -1,12 +1,16 @@
 package com.bwdesigngroup.neo4j.driver;
 
+import java.util.ArrayList;
+
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
+import org.neo4j.driver.Record;
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.Transaction;
 import org.neo4j.driver.TransactionWork;
+import org.python.antlr.ast.List;
 
 
 public class DatabaseConnector implements AutoCloseable
@@ -27,27 +31,42 @@ public class DatabaseConnector implements AutoCloseable
         try ( Session session = driver.session() )
         {
             Transaction tx = session.beginTransaction();
-            tx.run(cypher);
+            String[] commands = cypher.split(";");
+            for (String command : commands)
+            {
+                System.out.println(command);
+                tx.run(command);
+            }
             tx.commit();
             return;
         }
     }
 
-
+    // TODO: Select as JSON
     public Object selectTransaction( final String cypher) 
     {
         try ( Session session = driver.session() )
         {
-            Object response = session.writeTransaction( new TransactionWork<Object>()
-            {
-                @Override
-                public Object execute( Transaction tx )
+            Object response = session.readTransaction( new TransactionWork<Object>()
                 {
-                    Result result = tx.run( cypher );
+                    @Override
+                    public Object execute( Transaction tx )
+                    {
+                        Result result = tx.run( cypher );
+                        ArrayList<Record> queryResults = new ArrayList<Record>();
 
-                    return result.single().get( 0 ).asString();
-                }
-            } );
+                        while (result.hasNext())
+                        {
+                            Record record = result.next();
+                            queryResults.add(record);
+                        }
+
+                        return queryResults;
+                        // return result.single().get( 0 );
+                        // return result.list( r -> r.asMap()).stream();
+                    }
+                } 
+            );
             return response;
         }
     }
