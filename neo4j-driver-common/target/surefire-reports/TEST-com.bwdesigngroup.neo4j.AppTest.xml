@@ -1,69 +1,61 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite tests="1" failures="0" name="com.bwdesigngroup.neo4j.AppTest" time="0.003" errors="0" skipped="0">
+<testsuite tests="1" failures="0" name="com.bwdesigngroup.neo4j.AppTest" time="0.004" errors="0" skipped="0">
   <properties>
     <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
-    <property name="java.vm.version" value="11.0.10+8-jvmci-21.0-b06"/>
-    <property name="sun.boot.library.path" value="/Library/Java/JavaVirtualMachines/graalvm/Contents/Home/lib"/>
-    <property name="gopherProxySet" value="false"/>
+    <property name="java.vm.version" value="15.0.2+7"/>
+    <property name="sun.boot.library.path" value="/usr/local/Cellar/openjdk/15.0.2/libexec/openjdk.jdk/Contents/Home/lib"/>
     <property name="maven.multiModuleProjectDirectory" value="/Users/kgamble/Work/Testing/Java/maven/neo4j"/>
-    <property name="java.vm.vendor" value="GraalVM Community"/>
-    <property name="java.vendor.url" value="https://www.graalvm.org/"/>
+    <property name="java.vm.vendor" value="Oracle Corporation"/>
+    <property name="java.vendor.url" value="https://openjdk.java.net/"/>
     <property name="guice.disable.misplaced.annotation.check" value="true"/>
     <property name="path.separator" value=":"/>
     <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
-    <property name="sun.os.patch.level" value="unknown"/>
     <property name="user.country" value="US"/>
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
     <property name="user.dir" value="/Users/kgamble/Work/Testing/Java/maven/neo4j"/>
     <property name="java.vm.compressedOopsMode" value="Zero based"/>
-    <property name="java.runtime.version" value="11.0.10+8-jvmci-21.0-b06"/>
-    <property name="java.awt.graphicsenv" value="sun.awt.CGraphicsEnvironment"/>
+    <property name="java.runtime.version" value="15.0.2+7"/>
     <property name="os.arch" value="x86_64"/>
     <property name="java.io.tmpdir" value="/var/folders/fv/sq7_s8s52313rtt3_q_n25mc0000gn/T/"/>
     <property name="line.separator" value="
 "/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
-    <property name="jdk.internal.vm.ci.enabled" value="true"/>
     <property name="os.name" value="Mac OS X"/>
     <property name="classworlds.conf" value="/usr/local/Cellar/maven/3.6.3_1/libexec/bin/m2.conf"/>
     <property name="sun.jnu.encoding" value="UTF-8"/>
     <property name="java.library.path" value="/Users/kgamble/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:."/>
     <property name="maven.conf" value="/usr/local/Cellar/maven/3.6.3_1/libexec/conf"/>
     <property name="jdk.debug" value="release"/>
-    <property name="java.class.version" value="55.0"/>
+    <property name="java.class.version" value="59.0"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
-    <property name="os.version" value="10.16"/>
+    <property name="os.version" value="11.2.2"/>
     <property name="library.jansi.path" value="/usr/local/Cellar/maven/3.6.3_1/libexec/lib/jansi-native"/>
     <property name="http.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="user.home" value="/Users/kgamble"/>
     <property name="user.timezone" value="America/Los_Angeles"/>
-    <property name="java.awt.printerjob" value="sun.lwawt.macosx.CPrinterJob"/>
     <property name="file.encoding" value="UTF-8"/>
-    <property name="java.specification.version" value="11"/>
+    <property name="java.specification.version" value="15"/>
     <property name="user.name" value="kgamble"/>
     <property name="java.class.path" value="/usr/local/Cellar/maven/3.6.3_1/libexec/boot/plexus-classworlds-2.6.0.jar"/>
-    <property name="java.vm.specification.version" value="11"/>
+    <property name="java.vm.specification.version" value="15"/>
     <property name="sun.arch.data.model" value="64"/>
     <property name="sun.java.command" value="org.codehaus.plexus.classworlds.launcher.Launcher install"/>
-    <property name="java.home" value="/Library/Java/JavaVirtualMachines/graalvm/Contents/Home"/>
+    <property name="java.home" value="/usr/local/Cellar/openjdk/15.0.2/libexec/openjdk.jdk/Contents/Home"/>
     <property name="user.language" value="en"/>
     <property name="java.specification.vendor" value="Oracle Corporation"/>
-    <property name="awt.toolkit" value="sun.lwawt.macosx.LWCToolkit"/>
     <property name="java.vm.info" value="mixed mode, sharing"/>
-    <property name="java.version" value="11.0.10"/>
-    <property name="java.vendor" value="GraalVM Community"/>
+    <property name="java.version" value="15.0.2"/>
+    <property name="java.vendor" value="N/A"/>
     <property name="maven.home" value="/usr/local/Cellar/maven/3.6.3_1/libexec"/>
     <property name="file.separator" value="/"/>
     <property name="java.version.date" value="2021-01-19"/>
-    <property name="java.vendor.url.bug" value="https://github.com/oracle/graal/issues"/>
+    <property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
     <property name="sun.io.unicode.encoding" value="UnicodeBig"/>
     <property name="sun.cpu.endian" value="little"/>
-    <property name="java.vendor.version" value="GraalVM CE 21.0.0"/>
     <property name="socksNonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
-    <property name="sun.cpu.isalist" value=""/>
   </properties>
-  <testcase classname="com.bwdesigngroup.neo4j.AppTest" name="shouldAnswerWithTrue" time="0.003"/>
+  <testcase classname="com.bwdesigngroup.neo4j.AppTest" name="shouldAnswerWithTrue" time="0.004"/>
 </testsuite>

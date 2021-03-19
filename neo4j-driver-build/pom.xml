@@ -97,7 +97,7 @@
                         </hook>
                         <hook>
                             <scope>G</scope>
-                            <hookClass>com.bwdesigngroup.neo4j.scripting.GatewayHook</hookClass>
+                            <hookClass>com.bwdesigngroup.neo4j.GatewayHook</hookClass>
                         </hook>
                     </hooks>
 

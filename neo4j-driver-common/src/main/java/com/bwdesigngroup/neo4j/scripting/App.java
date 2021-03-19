@@ -6,6 +6,13 @@ public interface App {
     public void cypherUpdate(String cypher) throws Exception;
 
     public Object cypherSelect(String cypher) throws Exception;
+
+    public String getDatabasePath();
+    public String getDatabaseUsername();
+    public String getDatabasePassword();
+
+    
+
 }
 
 
