@@ -5,6 +5,8 @@ import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.script.hints.ScriptArg;
 import com.inductiveautomation.ignition.common.script.hints.ScriptFunction;
 
+import java.util.Map;
+
 import com.bwdesigngroup.neo4j.driver.*;
 
 public abstract class AbstractScriptModule implements App {
@@ -19,16 +21,15 @@ public abstract class AbstractScriptModule implements App {
 
     // @Override
     @ScriptFunction(docBundlePrefix = "AbstractScriptModule")
-    public void cypherUpdate(@ScriptArg("cypher") String cypher) throws Exception {
+    public void cypherUpdate(@ScriptArg("cypher") String cypher, @ScriptArg("params") Map<String, ?> params) throws Exception {
 
         String dbPath = getDBPathImpl();
         String dbUser = getDBUsernameImpl();
         String dbPass = getDBPasswordImpl();
 
-        System.out.println("DB Path is " + dbPath);
         DatabaseConnector connector = new DatabaseConnector(dbPath, dbUser, dbPass);
         
-        connector.updateTransaction(cypher);
+        connector.updateQuery(cypher, params);
         connector.close();
         return;
     }

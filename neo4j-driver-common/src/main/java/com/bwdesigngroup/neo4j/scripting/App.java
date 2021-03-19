@@ -1,9 +1,10 @@
 package com.bwdesigngroup.neo4j.scripting;
 
+import java.util.Map;
 
 public interface App {
 
-    public void cypherUpdate(String cypher) throws Exception;
+    public void cypherUpdate(String cypher, Map<String, ?> params) throws Exception;
 
     public Object cypherSelect(String cypher) throws Exception;
 

@@ -1,6 +1,7 @@
 package com.bwdesigngroup.neo4j.driver;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.Driver;
@@ -11,6 +12,8 @@ import org.neo4j.driver.Session;
 import org.neo4j.driver.Transaction;
 import org.neo4j.driver.TransactionWork;
 
+import static org.neo4j.driver.Values.parameters;
+
 
 public class DatabaseConnector implements AutoCloseable
 {
@@ -20,6 +23,19 @@ public class DatabaseConnector implements AutoCloseable
     {
         driver = GraphDatabase.driver( dbPath, AuthTokens.basic( dbUser, dbPass ) );
     }
+
+    public void updateQuery( final String cypher, Map<String, ?> params)
+    {
+        try ( Session session = driver.session() )
+        {
+            Transaction tx = session.beginTransaction();
+            tx.run(cypher,  parameters( params ));
+            tx.commit();
+            return;
+        }
+        
+    }
+
 
     public void updateTransaction( final String cypher) 
     {
