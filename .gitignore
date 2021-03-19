@@ -1,0 +1,25 @@
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# IntelliJ #
+*.iml
+.idea/*
+
+# Maven #
+**/target/*
+target/*
+
+# Mercurial #
+.hg
+.hgignore
+
+# Eclipse #
+org.eclipse.jdt.core.prefs
+org.eclipse.m2e.core.prefs
+org.eclipse.core.resources.prefs
+.classpath
+.project
