@@ -12,6 +12,8 @@
 # Maven #
 **/target/*
 target/*
+dependency-reduced-pom.xml
+
 
 # Mercurial #
 .hg
@@ -23,3 +25,10 @@ org.eclipse.m2e.core.prefs
 org.eclipse.core.resources.prefs
 .classpath
 .project
+.settings
+
+# VSCode #
+.vscode
+
+# Unsure tbh #
+.factorypath
