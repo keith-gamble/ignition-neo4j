@@ -36,6 +36,7 @@ public abstract class AbstractScriptModule implements App {
         return;
     }
 
+    @ScriptFunction(docBundlePrefix = "AbstractScriptModule")
     public void updateQuery(@ScriptArg("query") String query) throws Exception
     {
         updateQuery(query, null);
@@ -44,16 +45,21 @@ public abstract class AbstractScriptModule implements App {
 
     @Override
     @ScriptFunction(docBundlePrefix = "AbstractScriptModule")
-    public Object selectQuery(@ScriptArg("query") String query) throws Exception {
+    public Object selectQuery(@ScriptArg("query") String query, @ScriptArg("params") @Nullable Map<String,Object> params) throws Exception {
         String dbPath = getDBPathImpl();
         String dbUser = getDBUsernameImpl();
         String dbPass = getDBPasswordImpl();
         DatabaseConnector connector = new DatabaseConnector(dbPath, dbUser, dbPass);
         
-        Object response = connector.selectTransaction(query);
+        Object response = connector.selectQuery(query, params);
 
         connector.close();
         return response;
+    }
+
+    @ScriptFunction(docBundlePrefix = "AbstractScriptModule")
+    public Object selectQuery(@ScriptArg("query") String query) throws Exception {
+        return selectQuery(query, null);
     }
 
     public String getDatabasePath()

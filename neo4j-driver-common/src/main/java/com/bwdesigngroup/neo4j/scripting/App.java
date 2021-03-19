@@ -7,6 +7,7 @@ public interface App {
     public void updateQuery(String query, Map<String,Object> params) throws Exception;
     public void updateQuery(String query) throws Exception;
 
+    public Object selectQuery(String query, Map<String,Object> params) throws Exception;
     public Object selectQuery(String query) throws Exception;
 
     public String getDatabasePath();
