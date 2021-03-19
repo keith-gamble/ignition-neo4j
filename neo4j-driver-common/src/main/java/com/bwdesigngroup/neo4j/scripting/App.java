@@ -4,9 +4,10 @@ import java.util.Map;
 
 public interface App {
 
-    public void cypherUpdate(String cypher, Map<String, ?> params) throws Exception;
+    public void updateQuery(String query, Map<String,Object> params) throws Exception;
+    public void updateQuery(String query) throws Exception;
 
-    public Object cypherSelect(String cypher) throws Exception;
+    public Object selectQuery(String query) throws Exception;
 
     public String getDatabasePath();
     public String getDatabaseUsername();
