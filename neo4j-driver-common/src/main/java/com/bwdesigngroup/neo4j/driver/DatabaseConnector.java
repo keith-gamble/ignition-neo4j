@@ -10,18 +10,13 @@ import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.Transaction;
 import org.neo4j.driver.TransactionWork;
-import org.python.antlr.ast.List;
 
 
 public class DatabaseConnector implements AutoCloseable
 {
-    String dbPath = "bolt://3.239.219.86:7687";
-    String dbUser = "neo4j";
-    String dbPass = "fastener-ponds-tissue";
-
     private final Driver driver;
 
-    public DatabaseConnector()
+    public DatabaseConnector( String dbPath, String dbUser, String dbPass)
     {
         driver = GraphDatabase.driver( dbPath, AuthTokens.basic( dbUser, dbPass ) );
     }
