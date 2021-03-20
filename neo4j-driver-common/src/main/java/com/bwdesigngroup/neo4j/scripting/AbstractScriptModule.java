@@ -13,6 +13,8 @@ import com.bwdesigngroup.neo4j.driver.*;
 
 public abstract class AbstractScriptModule implements App {
 
+    private DatabaseConnector connector;
+
     static {
         BundleUtil.get().addBundle(
             AbstractScriptModule.class.getSimpleName(),
@@ -21,18 +23,22 @@ public abstract class AbstractScriptModule implements App {
         );
     }
 
+    private void verifyConnector() {
+        if (connector != null) {
+            return;
+        } else {
+            String dbPath = getDBPathImpl();
+            String dbUser = getDBUsernameImpl();
+            String dbPass = getDBPasswordImpl();
+            connector = new DatabaseConnector(dbPath, dbUser, dbPass);
+        }
+    }
+
     @Override
     @ScriptFunction(docBundlePrefix = "AbstractScriptModule")
     public void updateQuery(@ScriptArg("query") String query, @ScriptArg("params") @Nullable Map<String,Object> params) throws Exception {
-
-        String dbPath = getDBPathImpl();
-        String dbUser = getDBUsernameImpl();
-        String dbPass = getDBPasswordImpl();
-
-        DatabaseConnector connector = new DatabaseConnector(dbPath, dbUser, dbPass);
-        
+        verifyConnector();
         connector.updateQuery(query, params);
-        connector.close();
         return;
     }
 
@@ -46,14 +52,10 @@ public abstract class AbstractScriptModule implements App {
     @Override
     @ScriptFunction(docBundlePrefix = "AbstractScriptModule")
     public Object selectQuery(@ScriptArg("query") String query, @ScriptArg("params") @Nullable Map<String,Object> params) throws Exception {
-        String dbPath = getDBPathImpl();
-        String dbUser = getDBUsernameImpl();
-        String dbPass = getDBPasswordImpl();
-        DatabaseConnector connector = new DatabaseConnector(dbPath, dbUser, dbPass);
-        
+        verifyConnector();
+
         Object response = connector.selectQuery(query, params);
 
-        connector.close();
         return response;
     }
 
