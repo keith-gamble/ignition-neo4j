@@ -26,7 +26,10 @@ public class DatabaseConnector implements AutoCloseable
 
     public DatabaseConnector(String dbPath, String dbUser, String dbPass)
     {
+        logger.debug("Creating driver connector");
+
         driver = GraphDatabase.driver( dbPath, AuthTokens.basic( dbUser, dbPass ) );
+
     }
 
     public void updateQuery( final String query, @Nullable Map<String,Object> params)
@@ -47,6 +50,7 @@ public class DatabaseConnector implements AutoCloseable
                 
                 String summaryString = getResultSummaryString(result.consume());
                 
+                logger.debug(summaryString);
                 System.out.println(summaryString);
 
             }
