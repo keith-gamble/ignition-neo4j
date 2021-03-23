@@ -5,18 +5,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import com.inductiveautomation.ignition.common.gson.Gson;
+
 import org.jetbrains.annotations.Nullable;
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
+import org.neo4j.driver.Record;
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.Transaction;
 import org.neo4j.driver.TransactionWork;
+import org.neo4j.driver.summary.Notification;
 import org.neo4j.driver.summary.ResultSummary;
 import org.neo4j.driver.summary.SummaryCounters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 public class DatabaseConnector implements AutoCloseable
 {
@@ -64,30 +69,40 @@ public class DatabaseConnector implements AutoCloseable
         updateQuery(query, null);
     }
 
-
-    // TODO: Select as JSON
     public Object selectQuery( final String query, @Nullable Map<String,Object> params) 
     {
+        List<Map<String, Object>> resultList = new ArrayList<Map<String, Object>>();
+
         try ( Session session = driver.session() )
         {
-            Object response = session.readTransaction( new TransactionWork<Object>()
+            session.readTransaction( new TransactionWork<Object>()
                 {
                     @Override
                     public Object execute( Transaction tx )
                     {
-                        Result results;
+                        Result result;
                         
                         if (params == null) {
-                            results = tx.run(query);
+                            result = tx.run(query);
                         } else {
-                            results = tx.run(query, params);
+                            result = tx.run(query, params);
                         }
+                        
+                        while ( result.hasNext() ) {
+                            Record record = result.next();
+                            resultList.add(record.asMap());
+                        }
+                        
+                        String summaryString = getResultSummaryString(result.consume());
+                
+                        logger.debug(summaryString);
+                        System.out.println(summaryString);
 
-                        return results;
+                        return resultList;
                     }
                 } 
             );
-            return response;
+            return resultList;
         }
     }
 
@@ -98,8 +113,14 @@ public class DatabaseConnector implements AutoCloseable
 
     private String getResultSummaryString( ResultSummary summary) {
 
+        for (Notification message : summary.notifications()) {
+            
+            Gson gson = new Gson();
+            System.out.println(gson.toJson(message));
+        }
+
         SummaryCounters counters = summary.counters();
-                
+    
         List<String> resultList = new ArrayList<String>();
 
         long duration = summary.resultAvailableAfter(TimeUnit.MILLISECONDS);
@@ -133,7 +154,7 @@ public class DatabaseConnector implements AutoCloseable
             }
         } 
 
-        resultList.add( "Completed in " + duration + "ms" );
+        resultList.add( "Cypher Query Completed in " + duration + "ms" );
 
         return String.join(", ", resultList);
     }
