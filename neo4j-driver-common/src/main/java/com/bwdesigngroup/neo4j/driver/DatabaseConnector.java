@@ -1,9 +1,20 @@
 package com.bwdesigngroup.neo4j.driver;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.chrono.ChronoZonedDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import org.python.core.PyDictionary;
+import org.python.core.PyLong;
+import org.python.core.PyObject;
 
 import com.inductiveautomation.ignition.common.gson.Gson;
 
@@ -50,7 +61,8 @@ public class DatabaseConnector implements AutoCloseable
                 if (params == null) {
                     result = tx.run(command);
                 } else {
-                    result = tx.run(command, params);
+                    Map<String, Object> validatedParams = validateParameterMap(params);
+                    result = tx.run(command, validatedParams);
                 }
                 
                 String summaryString = getResultSummaryString(result.consume());
@@ -85,7 +97,8 @@ public class DatabaseConnector implements AutoCloseable
                         if (params == null) {
                             result = tx.run(query);
                         } else {
-                            result = tx.run(query, params);
+                            Map<String, Object> validatedParams = validateParameterMap(params);
+                            result = tx.run(query, validatedParams);
                         }
                         
                         while ( result.hasNext() ) {
@@ -157,6 +170,53 @@ public class DatabaseConnector implements AutoCloseable
         resultList.add( "Cypher Query Completed in " + duration + "ms" );
 
         return String.join(", ", resultList);
+    }
+
+    private static Object convertValueType(final Object value) {
+        if (value instanceof java.math.BigDecimal) {
+            return ((BigDecimal) value).doubleValue();
+        } else if (value instanceof java.math.BigInteger) {
+            return ((BigInteger) value).longValue();
+        } else if (value instanceof java.util.Date) {
+            return ((java.util.Date) value).toInstant().atZone(ZoneId.systemDefault());
+        } else if (value instanceof Map) {
+            return validateParameterMap((Map<String, Object>) value);
+        } else if (value instanceof org.python.core.PyList) {
+            List<Object> convertedArray = new ArrayList<Object>();
+            for (Object item : (org.python.core.PyList) value) {
+                convertedArray.add(convertValueType(item));
+            }
+            return convertedArray;
+        } else {
+            return value;
+        }
+    }
+
+    public static Map<String, Object> validateParameterMap(Map<String, Object> params) {
+
+        Map<String, Object> updatedParams = new HashMap<String, Object>();
+        try {
+            for (Map.Entry<String, Object> entry : params.entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+
+                if (value == null) {
+                    updatedParams.put(key,null);
+                    continue;
+                }
+                if (value instanceof Map) {
+                    Map<String, Object> subMap = (Map<String, Object>)value;
+                    updatedParams.put(key, validateParameterMap(subMap));
+                } else {
+                    updatedParams.put(key, convertValueType(value));
+                }
+            }
+            return updatedParams;
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println(e);
+        }
+        return updatedParams;
     }
 
 
