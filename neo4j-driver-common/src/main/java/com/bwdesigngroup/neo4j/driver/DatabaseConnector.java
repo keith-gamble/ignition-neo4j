@@ -20,6 +20,7 @@ import com.inductiveautomation.ignition.common.gson.Gson;
 
 import org.jetbrains.annotations.Nullable;
 import org.neo4j.driver.AuthTokens;
+import org.neo4j.driver.Config;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
 import org.neo4j.driver.Record;
@@ -44,7 +45,14 @@ public class DatabaseConnector implements AutoCloseable
     {
         logger.debug("Creating driver connector");
 
-        driver = GraphDatabase.driver( dbPath, AuthTokens.basic( dbUser, dbPass ) );
+        Config config = Config.builder()
+            .withMaxConnectionLifetime( 30, TimeUnit.MINUTES )
+            .withMaxConnectionPoolSize( 50 )
+            .withConnectionAcquisitionTimeout( 30, TimeUnit.MINUTES )
+            .withConnectionTimeout(15, TimeUnit.SECONDS)
+            .build();
+
+        driver = GraphDatabase.driver( dbPath, AuthTokens.basic( dbUser, dbPass ), config );
 
     }
 
