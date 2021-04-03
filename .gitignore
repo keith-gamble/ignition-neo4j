@@ -32,3 +32,6 @@ org.eclipse.core.resources.prefs
 
 # Unsure tbh #
 .factorypath
+
+# Ignition #
+*.modl

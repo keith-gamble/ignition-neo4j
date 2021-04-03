@@ -17,18 +17,18 @@ public class ClientScriptModule extends AbstractScriptModule {
     }
 
     @Override
-    protected String getDBPathImpl() {
-        return rpc.getDatabasePath();
+    protected String getDBPathImpl(String connectionName) {
+        return rpc.getDatabasePath(connectionName);
     }
 
     @Override
-    protected String getDBUsernameImpl() {
-        return rpc.getDatabaseUsername();
+    protected String getDBUsernameImpl(String connectionName) {
+        return rpc.getDatabaseUsername(connectionName);
     }
 
     @Override
-    protected String getDBPasswordImpl() {
-        return rpc.getDatabasePassword();
+    protected String getDBPasswordImpl(String connectionName) {
+        return rpc.getDatabasePassword(connectionName);
     }
 
 }
