@@ -23,36 +23,36 @@ public abstract class AbstractScriptModule implements App {
         );
     }
 
-    private void verifyConnector() {
+    private void verifyConnector(String connectionName) {
         if (connector != null) {
             return;
         } else {
-            String dbPath = getDBPathImpl();
-            String dbUser = getDBUsernameImpl();
-            String dbPass = getDBPasswordImpl();
+            String dbPath = getDBPathImpl(connectionName);
+            String dbUser = getDBUsernameImpl(connectionName);
+            String dbPass = getDBPasswordImpl(connectionName);
             connector = new DatabaseConnector(dbPath, dbUser, dbPass);
         }
     }
 
     @Override
     @ScriptFunction(docBundlePrefix = "AbstractScriptModule")
-    public void updateQuery(@ScriptArg("query") String query, @ScriptArg("params") @Nullable Map<String,Object> params) throws Exception {
-        verifyConnector();
+    public void updateQuery(@ScriptArg("connection") String connectionName, @ScriptArg("query") String query, @ScriptArg("params") @Nullable Map<String,Object> params) throws Exception {
+        verifyConnector(connectionName);
         connector.updateQuery(query, params);
         return;
     }
 
     @ScriptFunction(docBundlePrefix = "AbstractScriptModule")
-    public void updateQuery(@ScriptArg("query") String query) throws Exception
+    public void updateQuery(@ScriptArg("connection") String connectionName, @ScriptArg("query") String query) throws Exception
     {
-        updateQuery(query, null);
+        updateQuery(connectionName, query, null);
     }
 
 
     @Override
     @ScriptFunction(docBundlePrefix = "AbstractScriptModule")
-    public Object selectQuery(@ScriptArg("query") String query, @ScriptArg("params") @Nullable Map<String,Object> params) throws Exception {
-        verifyConnector();
+    public Object selectQuery(@ScriptArg("connection") String connectionName, @ScriptArg("query") String query, @ScriptArg("params") @Nullable Map<String,Object> params) throws Exception {
+        verifyConnector(connectionName);
 
         Object response = connector.selectQuery(query, params);
 
@@ -60,26 +60,26 @@ public abstract class AbstractScriptModule implements App {
     }
 
     @ScriptFunction(docBundlePrefix = "AbstractScriptModule")
-    public Object selectQuery(@ScriptArg("query") String query) throws Exception {
-        return selectQuery(query, null);
+    public Object selectQuery(@ScriptArg("connection") String connectionName, @ScriptArg("query") String query) throws Exception {
+        return selectQuery(connectionName, query, null);
     }
 
-    public String getDatabasePath()
+    public String getDatabasePath(String connectionName)
     {
-        return getDBPathImpl();
+        return getDBPathImpl(connectionName);
     }
 
-    public String getDatabaseUsername()
+    public String getDatabaseUsername(String connectionName)
     {
-        return getDBUsernameImpl();
+        return getDBUsernameImpl(connectionName);
     }
-    public String getDatabasePassword()
+    public String getDatabasePassword(String connectionName)
     {
-        return getDBPasswordImpl();
+        return getDBPasswordImpl(connectionName);
     }
 
-    protected abstract String getDBPathImpl();
-    protected abstract String getDBUsernameImpl();
-    protected abstract String getDBPasswordImpl();
+    protected abstract String getDBPathImpl(String connectionName);
+    protected abstract String getDBUsernameImpl(String connectionName);
+    protected abstract String getDBPasswordImpl(String connectionName);
 
 }

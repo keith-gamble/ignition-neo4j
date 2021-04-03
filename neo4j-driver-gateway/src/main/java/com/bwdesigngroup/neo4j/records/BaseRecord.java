@@ -29,12 +29,20 @@ public class BaseRecord extends PersistentRecord {
         return META;
     } 
 
+    public IdentityField getId() {
+        return Id;
+    }
+
     public String getType() {
         return getString(Type);
     }
 
     public String getName() {
         return getString(Name);
+    }
+
+    public String getStatus() {
+        return getString(Status);
     }
 
 }

@@ -4,6 +4,7 @@ package com.bwdesigngroup.neo4j.records;
 import com.bwdesigngroup.neo4j.AbstractExtensionType;
 import com.bwdesigngroup.neo4j.instances.RemoteDatabaseInstance;
 import com.inductiveautomation.ignition.gateway.localdb.persistence.Category;
+import com.inductiveautomation.ignition.gateway.localdb.persistence.IdentityField;
 import com.inductiveautomation.ignition.gateway.localdb.persistence.LongField;
 import com.inductiveautomation.ignition.gateway.localdb.persistence.PersistentRecord;
 import com.inductiveautomation.ignition.gateway.localdb.persistence.RecordMeta;
@@ -15,6 +16,7 @@ import com.inductiveautomation.ignition.gateway.web.components.editors.PasswordE
 import simpleorm.dataset.SFieldFlags;
 
 public class RemoteDatabaseRecord extends PersistentRecord {
+    
     public static final RecordMeta<RemoteDatabaseRecord> META = new RecordMeta<>(RemoteDatabaseRecord.class, "extension_point_remoteDBMS");
 
     public static final StringField Url = new StringField(META, "Url", SFieldFlags.SMANDATORY).setDefault("bolt://localhost:7687");
@@ -60,15 +62,15 @@ public class RemoteDatabaseRecord extends PersistentRecord {
         return getString(Url);
     }
 
-    public void setNeo4JUsername(String username) {
+    public void setUsername(String username) {
         setString(this.Username, username);
     }
 
-    public String getNeo4JUsername() {
+    public String getUsername() {
         return getString(Username);
     }
 
-    public void setNeo4JPassword(String pass) {
+    public void setPassword(String pass) {
         setString(this.Password, pass);
     }
 
