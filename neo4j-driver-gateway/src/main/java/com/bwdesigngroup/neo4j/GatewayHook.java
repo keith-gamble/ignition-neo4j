@@ -2,30 +2,41 @@ package com.bwdesigngroup.neo4j;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Optional;
 
 import com.bwdesigngroup.neo4j.components.DatabaseConnector;
 import com.bwdesigngroup.neo4j.records.BaseRecord;
 import com.bwdesigngroup.neo4j.records.RemoteDatabaseRecord;
-
+import com.bwdesigngroup.neo4j.web.Neo4JOverviewContributor;
+import com.bwdesigngroup.neo4j.web.Neo4JStatusRoutes;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.script.hints.PropertiesFileDocProvider;
 import com.inductiveautomation.ignition.gateway.clientcomm.ClientReqSession;
+import com.inductiveautomation.ignition.gateway.dataroutes.RouteGroup;
 import com.inductiveautomation.ignition.gateway.localdb.persistence.IRecordListener;
 import com.inductiveautomation.ignition.gateway.model.AbstractGatewayModuleHook;
 import com.inductiveautomation.ignition.gateway.model.ExtensionPointManager;
 import com.inductiveautomation.ignition.gateway.model.ExtensionPointType;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
+import com.inductiveautomation.ignition.gateway.web.components.AbstractNamedTab;
 import com.inductiveautomation.ignition.gateway.web.models.ConfigCategory;
 import com.inductiveautomation.ignition.gateway.web.models.IConfigTab;
+import com.inductiveautomation.ignition.gateway.web.models.INamedTab;
 import com.inductiveautomation.ignition.gateway.web.models.KeyValue;
+import com.inductiveautomation.ignition.gateway.web.pages.BasicReactPanel;
+import com.inductiveautomation.ignition.gateway.web.pages.status.StatusCategories;
+import com.inductiveautomation.ignition.gateway.web.pages.status.overviewmeta.OverviewContributor;
 
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +59,29 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
     
     // private final Set<AbstractExtensionType> instances = new HashSet<>();
     private final Map<String, DatabaseConnector> connectors = new HashMap<String, DatabaseConnector>();
+
+
+    /**
+     * This sets up the status panel which we'll add to the statusPanels list. The controller will be
+     * Neo4JStatusRoutes.java, and the model and view will be in our javascript folder. The status panel is optional
+     * Only add if your module will provide meaningful info.
+     */
+    private static final INamedTab NEO_STATUS_PAGE = new AbstractNamedTab(
+            "neo4j",
+            StatusCategories.SYSTEMS,
+            "Neo4J.nav.status.header") {
+
+        @Override
+        public WebMarkupContainer getPanel(String panelId) {
+            // We've set  GatewayHook.getMountPathAlias() to return hce, so we need to use that alias here.
+            return new BasicReactPanel(panelId, "/main/res/neo4j/js/neo4jstatus.js", "neo4jstatus");
+        }
+
+        @Override
+        public Iterable<String> getSearchTerms(){
+            return Arrays.asList("neo4j connections", "neo");
+        }
+    };
 
 
     // 
@@ -75,6 +109,15 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
     }
 
 
+    /**
+     * We'll add an overview contributor. This is optional -- only add if your module will provide meaningful info.
+     */
+    private final OverviewContributor overviewContributor = new Neo4JOverviewContributor();
+
+    @Override
+    public Optional<OverviewContributor> getStatusOverviewContributor() {
+        return Optional.of(overviewContributor);
+    }
 
     @Override
     public void setup(GatewayContext gatewayContext) {
@@ -168,5 +211,34 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
     @Override
     public boolean isFreeModule() {
         return true;
+    }
+
+    /**
+     * The following methods are used by the status panel. Only add these if you are providing a status panel.
+     */
+
+
+    // getMountPathAlias() allows us to use a shorter mount path. Use caution, because we don't want a conflict with
+    // other modules by other authors.
+    @Override
+    public Optional<String> getMountPathAlias() {
+        return Optional.of("neo4j");
+    }
+
+    // Use this whenever you have mounted resources
+    @Override
+    public Optional<String> getMountedResourceFolder() {
+        return Optional.of("mounted");
+    }
+
+    // Define your route handlers here
+    @Override
+    public void mountRouteHandlers(RouteGroup routes) {
+        new Neo4JStatusRoutes(context, routes).mountRoutes();
+    }
+
+    @Override
+    public List<? extends INamedTab> getStatusPanels() {
+        return Collections.singletonList(NEO_STATUS_PAGE);
     }
 }
