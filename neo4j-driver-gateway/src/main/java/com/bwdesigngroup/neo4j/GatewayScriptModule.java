@@ -1,69 +1,34 @@
 package com.bwdesigngroup.neo4j;
 
-import com.bwdesigngroup.neo4j.records.BaseRecord;
-import com.bwdesigngroup.neo4j.records.RemoteDatabaseRecord;
+import java.util.Map;
+
+import com.bwdesigngroup.neo4j.components.DatabaseConnector;
 import com.bwdesigngroup.neo4j.scripting.AbstractScriptModule;
-import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
-
-import simpleorm.dataset.SQuery;
+import org.jetbrains.annotations.Nullable;
 
 public class GatewayScriptModule extends AbstractScriptModule {
-    private GatewayContext context;
+    private GatewayHook INSTANCE;
 
-    public GatewayScriptModule( GatewayContext context )
+    public GatewayScriptModule( GatewayHook INSTANCE )
     {
-        this.context = context;
+        this.INSTANCE = INSTANCE;
     }
 
-    private BaseRecord getSettingsRecord(String connectionName) {
-        return context.getPersistenceInterface().queryOne(new SQuery<>(BaseRecord.META).eq(BaseRecord.Name, connectionName));
+    private DatabaseConnector getConnector(String connectionName) {
+        return INSTANCE.getConnector(connectionName);
     }
-
-    private RemoteDatabaseRecord getRemoteRecord(BaseRecord baseRecord) {
-        return context.getPersistenceInterface().find(RemoteDatabaseRecord.META, baseRecord.getLong(BaseRecord.Id));
+    
+    @Override
+    protected void updateQueryImpl(String connectionName, String query, @Nullable Map<String,Object> params) {
+        DatabaseConnector connector = getConnector(connectionName);
+        connector.updateQuery(query, params);
+        return;
     }
 
     @Override
-    protected String getDBPathImpl(String connectionName) {
-        BaseRecord settingsRecord = getSettingsRecord(connectionName);
-       
-        if ( settingsRecord.getType().equals("remote") ) {
-            RemoteDatabaseRecord remoteRecord = getRemoteRecord(settingsRecord);
-            if  ( remoteRecord != null ) {
-                return remoteRecord.getUrl();
-            }
-        }
-
-        return null;
+    protected Object selectQueryImpl(String connectionName, String query, @Nullable Map<String,Object> params) {
+        DatabaseConnector connector = getConnector(connectionName);
+        return connector.selectQuery(query, params);
     }
-
-    @Override
-    protected String getDBUsernameImpl(String connectionName) {
-        BaseRecord settingsRecord = getSettingsRecord(connectionName);
-
-        if ( settingsRecord.getType().equals("remote") ) {
-            RemoteDatabaseRecord remoteRecord = getRemoteRecord(settingsRecord);
-            if  ( remoteRecord != null ) {
-                return remoteRecord.getUsername();
-            }
-        }
-
-        return null;
-    }
-
-    @Override
-    protected String getDBPasswordImpl(String connectionName) {
-        BaseRecord settingsRecord = getSettingsRecord(connectionName);
-
-        if ( settingsRecord.getType().equals("remote") ) {
-            RemoteDatabaseRecord remoteRecord = getRemoteRecord(settingsRecord);
-            if  ( remoteRecord != null ) {
-                return remoteRecord.getPassword();
-            }
-        }
-
-        return null;
-    }
-
 }

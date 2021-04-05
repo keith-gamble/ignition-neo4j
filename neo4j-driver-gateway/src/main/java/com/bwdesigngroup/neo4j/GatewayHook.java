@@ -2,13 +2,13 @@ package com.bwdesigngroup.neo4j;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.bwdesigngroup.neo4j.instances.Extendable;
+import com.bwdesigngroup.neo4j.components.DatabaseConnector;
 import com.bwdesigngroup.neo4j.records.BaseRecord;
 import com.bwdesigngroup.neo4j.records.RemoteDatabaseRecord;
 
@@ -46,7 +46,10 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
         "remote", new RemoteDatabaseRecord.RemoteDatabaseType()
     );
     
-    private final Set<Extendable> instances = new HashSet<>();
+    // private final Set<AbstractExtensionType> instances = new HashSet<>();
+    private final Map<String, DatabaseConnector> connectors = new HashMap<String, DatabaseConnector>();
+
+
     // 
     //  This sets up the config panel
     //  
@@ -77,7 +80,7 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
     public void setup(GatewayContext gatewayContext) {
         this.context = gatewayContext;
         INSTANCE = this;
-        scriptModule = new GatewayScriptModule(this.context);
+        scriptModule = new GatewayScriptModule(INSTANCE);
 
         logger.debug("Beginning setup of Neo4J Module");
 
@@ -91,11 +94,17 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
         BaseRecord.META.addRecordListener(new IRecordListener<BaseRecord>() {
             @Override
             public void recordUpdated(BaseRecord SettingsRecord) {
+                RemoteDatabaseRecord rdr = getDatabaseRecord(SettingsRecord);
+                DatabaseConnector dbConnector = new DatabaseConnector(rdr.getUrl(), rdr.getUsername(), rdr.getPassword());
+                connectors.put(SettingsRecord.getName(), dbConnector);
                 logger.info("recordUpdated()");
             }
 
             @Override
             public void recordAdded(BaseRecord jSettingsRecord) {
+                RemoteDatabaseRecord rdr = getDatabaseRecord(jSettingsRecord);
+                DatabaseConnector dbConnector = new DatabaseConnector(rdr.getUrl(), rdr.getUsername(), rdr.getPassword());
+                connectors.put(jSettingsRecord.getName(), dbConnector);
                 logger.info("recordAdded()");
             }
 
@@ -117,14 +126,23 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
         }
     }
 
+    private RemoteDatabaseRecord getDatabaseRecord(BaseRecord SettingsRecord) {
+        return context.getPersistenceInterface().find(RemoteDatabaseRecord.META, SettingsRecord.getLong(BaseRecord.Id));
+    }
+
     @Override
     public void startup(LicenseState licenseState) {
         logger.info("startup()");
         List<BaseRecord> baseRecords = context.getPersistenceInterface().query(new SQuery<>(BaseRecord.META));
         for (BaseRecord record : baseRecords) {
-            Extendable instance = extensionPoints.get(record.getType()).createNewInstance(context, record);
-            instances.add(instance);
+            RemoteDatabaseRecord rdr = getDatabaseRecord(record);
+            DatabaseConnector dbConnector = new DatabaseConnector(rdr.getUrl(), rdr.getUsername(), rdr.getPassword());
+            connectors.put(record.getName(), dbConnector);
         }
+    }
+
+    public DatabaseConnector getConnector(String connectorName) {
+        return connectors.getOrDefault(connectorName, null);
     }
 
     @Override
