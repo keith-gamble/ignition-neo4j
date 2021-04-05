@@ -4,18 +4,13 @@ import java.util.Map;
 
 public interface App {
 
-    public void updateQuery(String connectionName, String query, Map<String,Object> params) throws Exception;
-    public void updateQuery(String connectionName, String query) throws Exception;
+    public void updateQuery(String connectionName, String query, Map<String,Object> params);
+    public void updateQuery(String connectionName, String query);
 
-    public Object selectQuery(String connectionName, String query, Map<String,Object> params) throws Exception;
-    public Object selectQuery(String connectionName, String query) throws Exception;
+    public Object selectQuery(String connectionName, String query, Map<String,Object> params);
+    public Object selectQuery(String connectionName, String query);
 
-    public String getDatabasePath(String connectionName);
-    public String getDatabaseUsername(String connectionName);
-    public String getDatabasePassword(String connectionName);
-
-    
-
+    // public DatabaseConnector getDatabaseConnector(String connectionName);
 }
 
 

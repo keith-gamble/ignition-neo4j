@@ -9,11 +9,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
-import com.bwdesigngroup.neo4j.driver.*;
+
 
 public abstract class AbstractScriptModule implements App {
-
-    private DatabaseConnector connector;
 
     static {
         BundleUtil.get().addBundle(
@@ -23,27 +21,17 @@ public abstract class AbstractScriptModule implements App {
         );
     }
 
-    private void verifyConnector(String connectionName) {
-        if (connector != null) {
-            return;
-        } else {
-            String dbPath = getDBPathImpl(connectionName);
-            String dbUser = getDBUsernameImpl(connectionName);
-            String dbPass = getDBPasswordImpl(connectionName);
-            connector = new DatabaseConnector(dbPath, dbUser, dbPass);
-        }
-    }
-
     @Override
     @ScriptFunction(docBundlePrefix = "AbstractScriptModule")
-    public void updateQuery(@ScriptArg("connection") String connectionName, @ScriptArg("query") String query, @ScriptArg("params") @Nullable Map<String,Object> params) throws Exception {
-        verifyConnector(connectionName);
-        connector.updateQuery(query, params);
+    public void updateQuery(@ScriptArg("connection") String connectionName, @ScriptArg("query") String query, @ScriptArg("params") @Nullable Map<String,Object> params) {
+        // DatabaseConnector connector = getDatabaseConnector(connectionName);
+        // connector.updateQuery(query, params);
+        updateQueryImpl(connectionName, query, params);
         return;
     }
 
     @ScriptFunction(docBundlePrefix = "AbstractScriptModule")
-    public void updateQuery(@ScriptArg("connection") String connectionName, @ScriptArg("query") String query) throws Exception
+    public void updateQuery(@ScriptArg("connection") String connectionName, @ScriptArg("query") String query)
     {
         updateQuery(connectionName, query, null);
     }
@@ -51,35 +39,24 @@ public abstract class AbstractScriptModule implements App {
 
     @Override
     @ScriptFunction(docBundlePrefix = "AbstractScriptModule")
-    public Object selectQuery(@ScriptArg("connection") String connectionName, @ScriptArg("query") String query, @ScriptArg("params") @Nullable Map<String,Object> params) throws Exception {
-        verifyConnector(connectionName);
+    public Object selectQuery(@ScriptArg("connection") String connectionName, @ScriptArg("query") String query, @ScriptArg("params") @Nullable Map<String,Object> params) {
+        // DatabaseConnector connector = getDatabaseConnector(connectionName);
 
-        Object response = connector.selectQuery(query, params);
-
+        // Object response = connector.selectQuery(query, params);
+        Object response = selectQueryImpl(connectionName, query, params);
         return response;
     }
 
     @ScriptFunction(docBundlePrefix = "AbstractScriptModule")
-    public Object selectQuery(@ScriptArg("connection") String connectionName, @ScriptArg("query") String query) throws Exception {
+    public Object selectQuery(@ScriptArg("connection") String connectionName, @ScriptArg("query") String query) {
         return selectQuery(connectionName, query, null);
     }
 
-    public String getDatabasePath(String connectionName)
-    {
-        return getDBPathImpl(connectionName);
-    }
+    // public DatabaseConnector getDatabaseConnector(String connectionName) {
+    //     return getDatabaseConnectorImpl(connectionName);
+    // }
 
-    public String getDatabaseUsername(String connectionName)
-    {
-        return getDBUsernameImpl(connectionName);
-    }
-    public String getDatabasePassword(String connectionName)
-    {
-        return getDBPasswordImpl(connectionName);
-    }
-
-    protected abstract String getDBPathImpl(String connectionName);
-    protected abstract String getDBUsernameImpl(String connectionName);
-    protected abstract String getDBPasswordImpl(String connectionName);
-
+    protected abstract void updateQueryImpl(String connectionName, String query, Map<String,Object> params);
+    protected abstract Object selectQueryImpl(String connectionName, String query, Map<String,Object> params);
+    // protected abstract DatabaseConnector getDatabaseConnectorImpl(String connectionName);
 }
