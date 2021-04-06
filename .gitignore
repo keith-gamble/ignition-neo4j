@@ -40,3 +40,8 @@ org.eclipse.core.resources.prefs
 
 # Ignition #
 *.modl
+node_modules
+
+# Build #
+sign.command
+Neo4J-Driver.modl
