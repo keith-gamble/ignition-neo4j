@@ -7,6 +7,7 @@
 package com.bwdesigngroup.neo4j.components;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import com.bwdesigngroup.neo4j.GatewayHook;
 import com.bwdesigngroup.neo4j.records.BaseRecord;
@@ -21,20 +22,22 @@ import simpleorm.dataset.SQuery;
  *
  * @author Keith Gamble
  */
-public class DatabaseConnectorStatus implements Runnable{
+public class DatabaseConnectorStatus implements Runnable {
 
     private GatewayContext context;
     private GatewayHook gateway;
+    private Long Id;
 
-    public DatabaseConnectorStatus(GatewayContext context, GatewayHook gateway) {
+    public DatabaseConnectorStatus(GatewayContext context, GatewayHook gateway, Long RecordID) {
         this.context = context;
         this.gateway = gateway;
+        this.Id = RecordID;
     }
 
     @Override
-    public void run() {
-        List<BaseRecord> baseRecords = context.getPersistenceInterface().query(new SQuery<>(BaseRecord.META));
-        for (BaseRecord SettingsRecord : baseRecords) {
+    public void run(){
+        BaseRecord SettingsRecord = context.getPersistenceInterface().queryOne(new SQuery<>(BaseRecord.META).eq(BaseRecord.ID, Id));
+        if ( SettingsRecord != null ) {
             boolean enabled = SettingsRecord.getEnabled();
             String status;
             if (!enabled) {
@@ -48,6 +51,8 @@ public class DatabaseConnectorStatus implements Runnable{
 
             SettingsRecord.setStatus(status);
             context.getPersistenceInterface().save(SettingsRecord);
+        } else {
+            throw new RuntimeException("Settings Record has been deleted");
         }
         return;
     }

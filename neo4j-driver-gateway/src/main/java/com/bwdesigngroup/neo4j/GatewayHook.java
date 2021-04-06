@@ -184,11 +184,10 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
             RemoteDatabaseRecord remoteRecord = getDatabaseRecord(SettingsRecord);
             DatabaseConnector dbConnector = new DatabaseConnector(SettingsRecord, remoteRecord);
             connectors.put(SettingsRecord.getName(), dbConnector);
-        }
 
-        // Instantiate the executorService that will update the database statuses
-        context.getScheduledExecutorService().scheduleAtFixedRate(new DatabaseConnectorStatus(context, INSTANCE), 30, 10, TimeUnit.SECONDS);
-        
+            // Instantiate the executorService that will update the database statuse
+            context.getScheduledExecutorService().scheduleAtFixedRate(new DatabaseConnectorStatus(context, INSTANCE, SettingsRecord.getId()), 30, SettingsRecord.getValidationTimeout(), TimeUnit.MILLISECONDS);
+        }        
     }
 
     public DatabaseConnector getConnector(String connectorName) {
