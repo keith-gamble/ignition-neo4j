@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,7 @@ import com.inductiveautomation.ignition.common.gson.Gson;
 import org.jetbrains.annotations.Nullable;
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.Config;
+import org.neo4j.driver.ConnectionPoolMetrics;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
 import org.neo4j.driver.Record;
@@ -247,6 +249,16 @@ public class DatabaseConnector implements AutoCloseable
         return this.maxConnectionPoolSize;
     }
 
+    public int getActiveConnections() {
+        Collection<ConnectionPoolMetrics> connectionMetrics = driver.metrics().connectionPoolMetrics();
+
+        int activeConnections = 0;
+        for (ConnectionPoolMetrics pool : connectionMetrics ) {
+            activeConnections += pool.inUse();
+        }
+
+        return activeConnections;
+    }
     @Override
     public void close() throws Exception
     {
