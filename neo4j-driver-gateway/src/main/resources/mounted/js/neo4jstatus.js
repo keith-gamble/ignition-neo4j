@@ -3255,8 +3255,6 @@ var neo4jstatus =
 	    value: true
 	});
 	exports.getConnectionsStatus = getConnectionsStatus;
-	exports.getConnectionDetail = getConnectionDetail;
-	exports.fetchPermissions = fetchPermissions;
 	
 	var _redux = __webpack_require__(2);
 	
@@ -3375,49 +3373,6 @@ var neo4jstatus =
 	        });
 	    };
 	}
-	
-	// Not used in this example. Shown here as an example of how to pass parameters to status routes
-	function getConnectionDetail(connectionName, startNextPoll) {
-	    var encodedConnectionName = encodeURIComponent(encodeURIComponent(connectionName)); // Needs to be double. Do this for anything that could be user generated
-	    return function (dispatch) {
-	        fetch('/main/data/neo4j/status/connections/' + encodedConnectionName, {
-	            method: 'get',
-	            credentials: 'same-origin',
-	            headers: {
-	                'Accept': 'application/json'
-	            }
-	        }).then(_ignitionLib.checkStatus).then(function (response) {
-	            return response.json();
-	        }).then(function (json) {
-	            if (startNextPoll()) {
-	                dispatch({ type: CONNECTIONS_DETAIL_LOAD, detail: json });
-	            }
-	        }).catch(function (reason) {
-	            startNextPoll();
-	            dispatch({ type: CONNECTIONS_DETAIL_ERR, reason: reason.toString() });
-	        });
-	    };
-	}
-	
-	// Not used in this example status page, but can be used to only allow users with config permission to make changes from the status page
-	function fetchPermissions() {
-	    return function (dispatch) {
-	        fetch('/main/data/status/permissions', {
-	            method: 'get',
-	            credentials: 'same-origin',
-	            headers: {
-	                'Accept': 'application/json'
-	            }
-	        }).then(_ignitionLib.checkStatus).then(function (response) {
-	            return response.json();
-	        }).then(function (json) {
-	            dispatch({
-	                type: FETCH_PERMISSIONS,
-	                permissions: json
-	            });
-	        });
-	    };
-	}
 
 /***/ }),
 /* 43 */
@@ -3509,26 +3464,24 @@ var neo4jstatus =
 	
 	            console.log("connections", connections);
 	            if (connections != null) {
-	                var validConnections = 0;
-	                var index;
-	                for (index = 0; index < connections.length; ++index) {
-	                    if (connections[index].ConnectionStatus == 'Valid') {
-	                        validConnections += 1;
-	                    }
-	                }
-	
-	                var HEADERS = [{ header: 'Connection Name', weight: 2 }, { header: 'Connection Type', weight: 1 }, { header: 'Connection Status', weight: 1 }];
+	                var HEADERS = [{ header: 'Connection Name', weight: 1 }, { header: 'Connection Type', weight: 1 }, { header: 'Connections', weight: 1 }, { header: 'Connection Status', weight: 1 }];
 	                var connectionCount = connections.count;
-	                var validConnections = validConnections + "/" + connectionCount;
+	                var activeConnections = 0;
 	
 	                if (connectionCount > 0) {
 	                    var connectionList = connections.connections;
 	                    var items = [];
 	                    if (connectionList != null) {
 	                        items = connectionList.map(function (connection) {
-	                            return [connection.ConnectionName, connection.ConnectionType, connection.ConnectionStatus];
+	                            var connectionCounts = connection.ActiveConnections + "/" + connection.MaxConnectionPoolSize;
+	                            if (connection.ConnectionStatus === "Valid") {
+	                                activeConnections += 1;
+	                            }
+	                            return [connection.ConnectionName, connection.ConnectionType, connectionCounts, connection.ConnectionStatus];
 	                        });
 	                    }
+	
+	                    var validConnections = activeConnections + "/" + connectionCount;
 	
 	                    return _react2.default.createElement(
 	                        'div',

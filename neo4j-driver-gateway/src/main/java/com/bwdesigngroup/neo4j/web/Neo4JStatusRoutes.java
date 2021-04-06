@@ -65,11 +65,14 @@ public class Neo4JStatusRoutes {
                 json.put("connections", jsonArray);
                 for (BaseRecord record : connectionList){
                     if (record != null) {
+                        DatabaseConnector dbConnector = INSTANCE.getConnector(record.getName());
                         JSONObject connectionJson = new JSONObject();
                         jsonArray.put(connectionJson);
                         connectionJson.put("ConnectionName", record.getName());
                         connectionJson.put("ConnectionType", record.getType());
                         connectionJson.put("ConnectionStatus", record.getStatus());
+                        connectionJson.put("MaxConnectionPoolSize", dbConnector.getMaxConnectionPoolSize());
+                        connectionJson.put("ActiveConnections", dbConnector.getActiveConnections());
                     }
                 }
             }

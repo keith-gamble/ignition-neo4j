@@ -42,35 +42,34 @@ class ConnectOverview extends Component {
         const {connections, connectionsError} = this.props;
         console.log("connections", connections);
         if (connections != null){
-            var validConnections = 0;
-            var index;
-            for (index = 0; index < connections.length; ++index) {
-                if ( connections[index].ConnectionStatus == 'Valid' ){
-                    validConnections += 1
-                }
-            }
-
-
             const HEADERS = [
-                { header: 'Connection Name', weight: 2 },
+                { header: 'Connection Name', weight: 1 },
                 { header: 'Connection Type', weight: 1 },
+                { header: 'Connections', weight: 1 },
                 { header: 'Connection Status', weight: 1 }
             ];
             const connectionCount = connections.count;
-            var validConnections = validConnections + "/" + connectionCount;
+            var activeConnections = 0;
 
             if (connectionCount > 0){
                 const connectionList = connections.connections;
                 let items = [];
                 if (connectionList != null){
                     items = connectionList.map(function(connection){
+                        var connectionCounts = connection.ActiveConnections + "/" + connection.MaxConnectionPoolSize;
+                        if ( connection.ConnectionStatus === "Valid" ){
+                            activeConnections += 1
+                        }
                         return [
                             connection.ConnectionName,
                             connection.ConnectionType,
+                            connectionCounts,
                             connection.ConnectionStatus
                         ];
                     });
                 }
+
+                const validConnections = activeConnections + "/" + connectionCount;
 
                 return (<div>
                     <div className="row">
