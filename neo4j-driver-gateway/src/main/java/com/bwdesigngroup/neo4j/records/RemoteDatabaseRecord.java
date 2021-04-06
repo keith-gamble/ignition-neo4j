@@ -37,7 +37,7 @@ public class RemoteDatabaseRecord extends PersistentRecord {
 
     public static class RemoteDatabaseType extends AbstractExtensionType {
         public RemoteDatabaseType() {
-            super("remote", "Remote DBMS", "A remote hosted Neo4J Database");
+            super("Remote", "Remote DBMS", "A remote hosted Neo4J Database");
         }
 
         @Override
