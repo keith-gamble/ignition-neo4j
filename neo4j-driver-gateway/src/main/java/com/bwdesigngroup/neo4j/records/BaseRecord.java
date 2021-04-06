@@ -27,11 +27,12 @@ public class BaseRecord extends PersistentRecord {
     public static final BooleanField ENABLED = new BooleanField(META, "Enabled", SFieldFlags.SMANDATORY).setDefault(true);
 
     // Initialize the advanced properties
+    public static final StringField DATABASE = new StringField(META, "Database");
     public static final IntField SLOW_QUERY_THRESHOLD = new IntField(META, "SlowQueryThreshold", SFieldFlags.SMANDATORY).setDefault(60000);
     public static final IntField VALIDATION_TIMEOUT = new IntField(META, "ValidationTimeout", SFieldFlags.SMANDATORY).setDefault(10000);
     public static final IntField MAX_CONNECTION_POOL_SIZE = new IntField(META, "MaxConnectionPoolSize", SFieldFlags.SMANDATORY).setDefault(8);
 
-    static final Category Main = new Category("BaseRecord.Category.Main", 1000).include(ID, NAME, ENABLED);
+    static final Category Main = new Category("BaseRecord.Category.Main", 1000).include(ID, NAME, DATABASE, ENABLED);
 
     static final Category Advanced = new Category("BaseRecord.Category.Advanced", 9000, true).include(SLOW_QUERY_THRESHOLD, VALIDATION_TIMEOUT, MAX_CONNECTION_POOL_SIZE);
 
@@ -39,6 +40,7 @@ public class BaseRecord extends PersistentRecord {
         TYPE.getFormMeta().setVisible(false);
         STATUS.getFormMeta().setVisible(false);
         ENABLED.getFormMeta().setFieldDescriptionKey("BaseRecord.Enabled.Description");
+        DATABASE.getFormMeta().setFieldDescriptionKey("BaseRecord.Database.Description");
         SLOW_QUERY_THRESHOLD.getFormMeta().setFieldDescriptionKey("BaseRecord.SlowQueryThreshold.Description");
         VALIDATION_TIMEOUT.getFormMeta().setFieldDescriptionKey("BaseRecord.ValidationTimeout.Description");
         MAX_CONNECTION_POOL_SIZE.getFormMeta().setFieldDescriptionKey("BaseRecord.MaxConnectionPoolSize.Description");
@@ -63,6 +65,10 @@ public class BaseRecord extends PersistentRecord {
 
     public String getName() {
         return getString(NAME);
+    }
+
+    public String getDatabase() {
+        return getString(DATABASE);
     }
 
     public int getSlowQueryThreshold() {

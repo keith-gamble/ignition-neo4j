@@ -23,8 +23,10 @@ import org.neo4j.driver.GraphDatabase;
 import org.neo4j.driver.Record;
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
+import org.neo4j.driver.SessionConfig;
 import org.neo4j.driver.Transaction;
 import org.neo4j.driver.TransactionWork;
+import org.neo4j.driver.SessionConfig.Builder;
 import org.neo4j.driver.summary.Notification;
 import org.neo4j.driver.summary.ResultSummary;
 import org.neo4j.driver.summary.SummaryCounters;
@@ -38,6 +40,8 @@ public class DatabaseConnector implements AutoCloseable
     private int maxConnectionPoolSize;
     private BaseRecord SettingsRecord;
     private RemoteDatabaseRecord DatabaseRecord;
+    private String Database;
+    private SessionConfig sessionConfig;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -45,8 +49,18 @@ public class DatabaseConnector implements AutoCloseable
     {
         this.SettingsRecord = settingsRecord;
         this.DatabaseRecord = databaseRecord;
+        this.Database = settingsRecord.getDatabase();
         this.slowQueryThreshold = settingsRecord.getSlowQueryThreshold();
         this.maxConnectionPoolSize = settingsRecord.getMaxConnectionPoolSize();
+
+
+        Builder configBuilder = SessionConfig.builder();
+
+        if ( this.Database != null ) {
+            configBuilder.withDatabase(this.Database);
+        }
+
+        this.sessionConfig = configBuilder.build();
 
         Config config = Config.builder()
             .withMaxConnectionLifetime( 30, TimeUnit.MINUTES )
@@ -65,7 +79,7 @@ public class DatabaseConnector implements AutoCloseable
 
     public void updateQuery( final String query, @Nullable Map<String,Object> params)
     {
-        try ( Session session = driver.session() )
+        try ( Session session = driver.session(sessionConfig) )
         {
             Transaction tx = session.beginTransaction();
             String[] commands = query.split(";");
@@ -100,7 +114,7 @@ public class DatabaseConnector implements AutoCloseable
     {
         List<Map<String, Object>> resultList = new ArrayList<Map<String, Object>>();
 
-        try ( Session session = driver.session() )
+        try ( Session session = driver.session(sessionConfig) )
         {
             session.readTransaction( new TransactionWork<Object>()
                 {
