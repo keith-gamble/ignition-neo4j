@@ -16,7 +16,7 @@ const BLANK_STATE = {
 
     links: [<a className="primary button"
                target="_blank"
-               href="https://google.com">Learn More</a>
+               href="/main/web/config/neo4j.neo4j">Add Connection</a>
     ]
 };
 
@@ -43,24 +43,33 @@ class ConnectOverview extends Component {
         console.log("connections", connections);
         if (connections != null){
             const HEADERS = [
-                { header: 'Connection Name', weight: 2 },
+                { header: 'Connection Name', weight: 1 },
                 { header: 'Connection Type', weight: 1 },
+                { header: 'Connections', weight: 1 },
                 { header: 'Connection Status', weight: 1 }
             ];
             const connectionCount = connections.count;
+            var activeConnections = 0;
 
             if (connectionCount > 0){
                 const connectionList = connections.connections;
                 let items = [];
                 if (connectionList != null){
                     items = connectionList.map(function(connection){
+                        var connectionCounts = connection.ActiveConnections + "/" + connection.MaxConnectionPoolSize;
+                        if ( connection.ConnectionStatus === "Valid" ){
+                            activeConnections += 1
+                        }
                         return [
                             connection.ConnectionName,
                             connection.ConnectionType,
+                            connectionCounts,
                             connection.ConnectionStatus
                         ];
                     });
                 }
+
+                const validConnections = activeConnections + "/" + connectionCount;
 
                 return (<div>
                     <div className="row">
@@ -69,14 +78,12 @@ class ConnectOverview extends Component {
                                 <div className="quick-links">
                                     <a href="/main/web/config/neo4j.neo4j">Configure</a>
                                 </div>
-                                <h6>Systems</h6>
-                                <h1>Performance</h1>
                             </div>
                         </div>
                     </div>
                     <div className="row">
                         <div className="small-12 medium-5 large-3 columns">
-                            <Gauge label="Connections" value={connectionCount}/>
+                            <Gauge label="Valid Connections" value={validConnections}/>
                         </div>
                     </div>
                     <div className="row">

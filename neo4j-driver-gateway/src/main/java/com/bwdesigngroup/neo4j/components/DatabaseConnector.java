@@ -4,16 +4,20 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import com.bwdesigngroup.neo4j.records.BaseRecord;
+import com.bwdesigngroup.neo4j.records.RemoteDatabaseRecord;
 import com.inductiveautomation.ignition.common.gson.Gson;
 
 import org.jetbrains.annotations.Nullable;
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.Config;
+import org.neo4j.driver.ConnectionPoolMetrics;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
 import org.neo4j.driver.Record;
@@ -27,26 +31,33 @@ import org.neo4j.driver.summary.SummaryCounters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class DatabaseConnector implements AutoCloseable
 {
     private final Driver driver;
+    private int slowQueryThreshold;
+    private int maxConnectionPoolSize;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public DatabaseConnector(String dbPath, String dbUser, String dbPass)
+    public DatabaseConnector(BaseRecord SettingsRecord, RemoteDatabaseRecord DatabaseRecord)
     {
         logger.debug("Creating driver connector");
+        this.slowQueryThreshold = SettingsRecord.getSlowQueryThreshold();
+        this.maxConnectionPoolSize = SettingsRecord.getMaxConnectionPoolSize();
 
         Config config = Config.builder()
             .withMaxConnectionLifetime( 30, TimeUnit.MINUTES )
-            .withMaxConnectionPoolSize( 50 )
+            .withMaxConnectionPoolSize( this.maxConnectionPoolSize  )
             .withConnectionAcquisitionTimeout( 30, TimeUnit.MINUTES )
             .withConnectionTimeout(15, TimeUnit.SECONDS)
+            .withDriverMetrics()
             .build();
 
-        driver = GraphDatabase.driver( dbPath, AuthTokens.basic( dbUser, dbPass ), config );
-
+        if (DatabaseRecord.getUsername() != null) {
+            driver = GraphDatabase.driver( DatabaseRecord.getUri(), AuthTokens.basic( DatabaseRecord.getUsername(), DatabaseRecord.getPassword() ), config );
+        } else {
+            driver = GraphDatabase.driver( DatabaseRecord.getUri(), config );
+        }
     }
 
     public void updateQuery( final String query, @Nullable Map<String,Object> params)
@@ -66,7 +77,7 @@ public class DatabaseConnector implements AutoCloseable
                     result = tx.run(command, validatedParams);
                 }
                 
-                String summaryString = getResultSummaryString(result.consume());
+                String summaryString = getResultSummaryString(result.consume(), query);
                 
                 logger.debug(summaryString);
                 System.out.println(summaryString);
@@ -107,7 +118,7 @@ public class DatabaseConnector implements AutoCloseable
                             resultList.add(record.asMap());
                         }
                         
-                        String summaryString = getResultSummaryString(result.consume());
+                        String summaryString = getResultSummaryString(result.consume(), query);
                 
                         logger.debug(summaryString);
                         System.out.println(summaryString);
@@ -125,7 +136,7 @@ public class DatabaseConnector implements AutoCloseable
         return selectQuery(query, null);
     }
 
-    private String getResultSummaryString( ResultSummary summary) {
+    private String getResultSummaryString( ResultSummary summary, String query) {
 
         for (Notification message : summary.notifications()) {
             
@@ -138,6 +149,9 @@ public class DatabaseConnector implements AutoCloseable
         List<String> resultList = new ArrayList<String>();
 
         long duration = summary.resultAvailableAfter(TimeUnit.MILLISECONDS);
+        if ( duration > this.slowQueryThreshold ) {
+            logger.warn("Slow Query took " + ( duration / 1000 ) + " seconds to execute: " + query);
+        }
 
         if ( counters.containsUpdates() ) {
             
@@ -231,7 +245,20 @@ public class DatabaseConnector implements AutoCloseable
         return true;
     }
 
+    public int getMaxConnectionPoolSize() {
+        return this.maxConnectionPoolSize;
+    }
 
+    public int getActiveConnections() {
+        Collection<ConnectionPoolMetrics> connectionMetrics = driver.metrics().connectionPoolMetrics();
+
+        int activeConnections = 0;
+        for (ConnectionPoolMetrics pool : connectionMetrics ) {
+            activeConnections += pool.inUse();
+        }
+
+        return activeConnections;
+    }
     @Override
     public void close() throws Exception
     {

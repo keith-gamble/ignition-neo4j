@@ -50,13 +50,6 @@ public class Neo4JStatusRoutes {
                 .type(TYPE_JSON)
                 .restrict(WicketAccessControl.STATUS_SECTION)
                 .mount();
-
-        // Not used in this example. Shown here as an example of using parameters passed in from javascript
-        routes.newRoute("/status/connections/:name")
-                .handler((req, res) -> getConnectionDetail(req, res, req.getParameter("name")))
-                .type(TYPE_JSON)
-                .restrict(WicketAccessControl.STATUS_SECTION)
-                .mount();
     }
 
     public JSONObject getConnectionStatus(RequestContext requestContext, HttpServletResponse httpServletResponse) throws JSONException {
@@ -72,11 +65,14 @@ public class Neo4JStatusRoutes {
                 json.put("connections", jsonArray);
                 for (BaseRecord record : connectionList){
                     if (record != null) {
+                        DatabaseConnector dbConnector = INSTANCE.getConnector(record.getName());
                         JSONObject connectionJson = new JSONObject();
                         jsonArray.put(connectionJson);
                         connectionJson.put("ConnectionName", record.getName());
                         connectionJson.put("ConnectionType", record.getType());
                         connectionJson.put("ConnectionStatus", record.getStatus());
+                        connectionJson.put("MaxConnectionPoolSize", dbConnector.getMaxConnectionPoolSize());
+                        connectionJson.put("ActiveConnections", dbConnector.getActiveConnections());
                     }
                 }
             }

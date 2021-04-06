@@ -17,23 +17,24 @@ import simpleorm.dataset.SFieldFlags;
 
 public class RemoteDatabaseRecord extends PersistentRecord {
     
-    public static final RecordMeta<RemoteDatabaseRecord> META = new RecordMeta<>(RemoteDatabaseRecord.class, "extension_point_remoteDBMS");
+    public static final RecordMeta<RemoteDatabaseRecord> META = new RecordMeta<>(RemoteDatabaseRecord.class, "neo4j_remoteDBMS");
 
-    public static final StringField Url = new StringField(META, "Url", SFieldFlags.SMANDATORY).setDefault("bolt://localhost:7687");
-    public static final StringField Username = new StringField(META, "Username").setDefault("neo4j");
-    public static final StringField Password = new StringField(META, "Password");
+    public static final StringField CONNECTURL = new StringField(META, "ConnectUri", SFieldFlags.SMANDATORY).setDefault("bolt://localhost:7687");
+    public static final StringField USERNAME = new StringField(META, "Username").setDefault("neo4j");
+    public static final StringField PASSWORD = new StringField(META, "Password");
 
-    public static final LongField ProfileId = new LongField(META, "ProfileId", SFieldFlags.SPRIMARY_KEY);
-    public static final ReferenceField<BaseRecord> Profile =
-        new ReferenceField<>(META, BaseRecord.META, "Profile", ProfileId);
+    public static final LongField PROFILE_ID = new LongField(META, "ProfileId", SFieldFlags.SPRIMARY_KEY);
+    public static final ReferenceField<BaseRecord> PROFILE =
+        new ReferenceField<>(META, BaseRecord.META, "Profile", PROFILE_ID);
 
     static {
-        Password.getFormMeta().setEditorSource(PasswordEditorSource.getSharedInstance());
-        Profile.getFormMeta().setVisible(false);
+        PASSWORD.getFormMeta().setEditorSource(PasswordEditorSource.getSharedInstance());
+        PROFILE.getFormMeta().setVisible(false);
+        CONNECTURL.getFormMeta().setFieldDescriptionKey("RemoteDatabaseRecord.ConnectUri.Description");
     }
 
     // Create the category for our connection info
-    static final Category ConnectionInfo = new Category("RemoteDatabaseRecord.Category.Connection", 2000).include(Url, Username, Password);
+    static final Category ConnectionInfo = new Category("RemoteDatabaseRecord.Category.Connection", 2000).include(CONNECTURL, USERNAME, PASSWORD);
 
     public static class RemoteDatabaseType extends AbstractExtensionType {
         public RemoteDatabaseType() {
@@ -54,28 +55,28 @@ public class RemoteDatabaseRecord extends PersistentRecord {
     }
 
     // Define the accessors for the database settings
-    public void setUrl(String path) {
-        setString(Url, path);
+    public void setUri(String path) {
+        setString(CONNECTURL, path);
     }
 
-    public String getUrl() {
-        return getString(Url);
+    public String getUri() {
+        return getString(CONNECTURL);
     }
 
     public void setUsername(String username) {
-        setString(this.Username, username);
+        setString(this.USERNAME, username);
     }
 
     public String getUsername() {
-        return getString(Username);
+        return getString(USERNAME);
     }
 
     public void setPassword(String pass) {
-        setString(this.Password, pass);
+        setString(this.PASSWORD, pass);
     }
 
     public String getPassword() {
-        return getString(Password);
+        return getString(PASSWORD);
     }
 
     @Override

@@ -11,10 +11,10 @@ public class RemoteDatabaseInstance extends Extendable {
     private final String password;
 
     public RemoteDatabaseInstance(BaseRecord baseRecord, RemoteDatabaseRecord childRecord) {
-        this.name = baseRecord.getString(BaseRecord.Name);
-        this.enabled = baseRecord.getBoolean(BaseRecord.Enabled);
-        this.url = childRecord.getString(RemoteDatabaseRecord.Url);
-        this.username = childRecord.getString(RemoteDatabaseRecord.Username);
-        this.password = childRecord.getString(RemoteDatabaseRecord.Password);
+        this.name = baseRecord.getString(BaseRecord.NAME);
+        this.enabled = baseRecord.getBoolean(BaseRecord.ENABLED);
+        this.url = childRecord.getString(RemoteDatabaseRecord.CONNECTURL);
+        this.username = childRecord.getString(RemoteDatabaseRecord.USERNAME);
+        this.password = childRecord.getString(RemoteDatabaseRecord.PASSWORD);
     }
 }
