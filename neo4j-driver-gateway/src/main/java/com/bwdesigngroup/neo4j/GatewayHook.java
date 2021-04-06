@@ -143,7 +143,7 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
                 RemoteDatabaseRecord remoteRecord = getDatabaseRecord(SettingsRecord);
                 DatabaseConnector dbConnector = new DatabaseConnector(SettingsRecord, remoteRecord);
                 connectors.put(SettingsRecord.getName(), dbConnector);
-                context.getScheduledExecutorService().scheduleAtFixedRate(new DatabaseConnectorStatus(context, INSTANCE, SettingsRecord.getId()), 30, SettingsRecord.getValidationTimeout(), TimeUnit.MILLISECONDS);
+                context.getScheduledExecutorService().scheduleAtFixedRate(new DatabaseConnectorStatus(context, INSTANCE, SettingsRecord.getId()), 2, SettingsRecord.getValidationTimeout(), TimeUnit.MILLISECONDS);
             }
 
             @Override
@@ -182,11 +182,14 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
         List<BaseRecord> baseRecords = context.getPersistenceInterface().query(new SQuery<>(BaseRecord.META));
         for (BaseRecord SettingsRecord : baseRecords) {
             RemoteDatabaseRecord remoteRecord = getDatabaseRecord(SettingsRecord);
-            DatabaseConnector dbConnector = new DatabaseConnector(SettingsRecord, remoteRecord);
-            connectors.put(SettingsRecord.getName(), dbConnector);
-
-            // Instantiate the executorService that will update the database statuse
-            context.getScheduledExecutorService().scheduleAtFixedRate(new DatabaseConnectorStatus(context, INSTANCE, SettingsRecord.getId()), 30, SettingsRecord.getValidationTimeout(), TimeUnit.MILLISECONDS);
+            try {                
+                DatabaseConnector dbConnector = new DatabaseConnector(SettingsRecord, remoteRecord);
+                connectors.put(SettingsRecord.getName(), dbConnector);
+                // Instantiate the executorService that will update the database statuse
+                context.getScheduledExecutorService().scheduleAtFixedRate(new DatabaseConnectorStatus(context, INSTANCE, SettingsRecord.getId()), 2, SettingsRecord.getValidationTimeout(), TimeUnit.MILLISECONDS);
+            } catch ( Exception e ) { 
+                logger.error("Unable to instantiate connection '" + SettingsRecord.getName() + "': " + e.getMessage());
+            }
         }        
     }
 

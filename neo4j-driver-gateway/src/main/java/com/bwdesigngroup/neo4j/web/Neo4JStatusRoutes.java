@@ -90,7 +90,7 @@ public class Neo4JStatusRoutes {
         DatabaseConnector connector = INSTANCE.getConnector(decodedConnectionName);
         JSONObject json = new JSONObject();
         
-        boolean isValid = connector.verifyConnectivity();
+        boolean isValid = connector.isConnected();
         json.put("connection", isValid);
         return json;
     }

@@ -36,14 +36,17 @@ public class DatabaseConnector implements AutoCloseable
     private final Driver driver;
     private int slowQueryThreshold;
     private int maxConnectionPoolSize;
+    private BaseRecord SettingsRecord;
+    private RemoteDatabaseRecord DatabaseRecord;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public DatabaseConnector(BaseRecord SettingsRecord, RemoteDatabaseRecord DatabaseRecord)
+    public DatabaseConnector(BaseRecord settingsRecord, RemoteDatabaseRecord databaseRecord)
     {
-        logger.debug("Creating driver connector");
-        this.slowQueryThreshold = SettingsRecord.getSlowQueryThreshold();
-        this.maxConnectionPoolSize = SettingsRecord.getMaxConnectionPoolSize();
+        this.SettingsRecord = settingsRecord;
+        this.DatabaseRecord = databaseRecord;
+        this.slowQueryThreshold = settingsRecord.getSlowQueryThreshold();
+        this.maxConnectionPoolSize = settingsRecord.getMaxConnectionPoolSize();
 
         Config config = Config.builder()
             .withMaxConnectionLifetime( 30, TimeUnit.MINUTES )
@@ -234,7 +237,7 @@ public class DatabaseConnector implements AutoCloseable
         return updatedParams;
     }
 
-    public boolean verifyConnectivity() {
+    public boolean isConnected() {
         try {
             driver.verifyConnectivity();
         } catch (Exception e){

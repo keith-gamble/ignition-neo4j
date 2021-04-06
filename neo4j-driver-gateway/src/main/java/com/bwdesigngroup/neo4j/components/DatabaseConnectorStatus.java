@@ -24,6 +24,8 @@ import simpleorm.dataset.SQuery;
  */
 public class DatabaseConnectorStatus implements Runnable {
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
     private GatewayContext context;
     private GatewayHook gateway;
     private Long Id;
@@ -43,12 +45,10 @@ public class DatabaseConnectorStatus implements Runnable {
             if (!enabled) {
                 status = "Disabled";
             } else {
-
                 DatabaseConnector connector = gateway.getConnector(SettingsRecord.getName());
-                boolean isConnected = connector.verifyConnectivity();
+                boolean isConnected = connector.isConnected();
                 status = (isConnected) ? "Valid" : "Faulted";
             }
-
             SettingsRecord.setStatus(status);
             context.getPersistenceInterface().save(SettingsRecord);
         } else {
