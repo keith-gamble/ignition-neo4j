@@ -140,16 +140,16 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
         BaseRecord.META.addRecordListener(new IRecordListener<BaseRecord>() {
             @Override
             public void recordUpdated(BaseRecord SettingsRecord) {
-                RemoteDatabaseRecord rdr = getDatabaseRecord(SettingsRecord);
-                DatabaseConnector dbConnector = new DatabaseConnector(rdr.getUrl(), rdr.getUsername(), rdr.getPassword());
+                RemoteDatabaseRecord remoteRecord = getDatabaseRecord(SettingsRecord);
+                DatabaseConnector dbConnector = new DatabaseConnector(SettingsRecord, remoteRecord);
                 connectors.put(SettingsRecord.getName(), dbConnector);
                 logger.info("recordUpdated()");
             }
 
             @Override
             public void recordAdded(BaseRecord jSettingsRecord) {
-                RemoteDatabaseRecord rdr = getDatabaseRecord(jSettingsRecord);
-                DatabaseConnector dbConnector = new DatabaseConnector(rdr.getUrl(), rdr.getUsername(), rdr.getPassword());
+                RemoteDatabaseRecord remoteRecord = getDatabaseRecord(jSettingsRecord);
+                DatabaseConnector dbConnector = new DatabaseConnector(jSettingsRecord, remoteRecord);
                 connectors.put(jSettingsRecord.getName(), dbConnector);
                 logger.info("recordAdded()");
             }
@@ -180,10 +180,10 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
     public void startup(LicenseState licenseState) {
         logger.info("startup()");
         List<BaseRecord> baseRecords = context.getPersistenceInterface().query(new SQuery<>(BaseRecord.META));
-        for (BaseRecord record : baseRecords) {
-            RemoteDatabaseRecord rdr = getDatabaseRecord(record);
-            DatabaseConnector dbConnector = new DatabaseConnector(rdr.getUrl(), rdr.getUsername(), rdr.getPassword());
-            connectors.put(record.getName(), dbConnector);
+        for (BaseRecord SettingsRecord : baseRecords) {
+            RemoteDatabaseRecord remoteRecord = getDatabaseRecord(SettingsRecord);
+            DatabaseConnector dbConnector = new DatabaseConnector(SettingsRecord, remoteRecord);
+            connectors.put(SettingsRecord.getName(), dbConnector);
         }
 
         // Instantiate the executorService that will update the database statuses

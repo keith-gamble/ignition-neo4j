@@ -19,17 +19,18 @@ public class RemoteDatabaseRecord extends PersistentRecord {
     
     public static final RecordMeta<RemoteDatabaseRecord> META = new RecordMeta<>(RemoteDatabaseRecord.class, "neo4j_remoteDBMS");
 
-    public static final StringField CONNECTURL = new StringField(META, "ConnectUrl", SFieldFlags.SMANDATORY).setDefault("bolt://localhost:7687");
+    public static final StringField CONNECTURL = new StringField(META, "ConnectUri", SFieldFlags.SMANDATORY).setDefault("bolt://localhost:7687");
     public static final StringField USERNAME = new StringField(META, "Username").setDefault("neo4j");
     public static final StringField PASSWORD = new StringField(META, "Password");
 
-    public static final LongField ProfileId = new LongField(META, "ProfileId", SFieldFlags.SPRIMARY_KEY);
-    public static final ReferenceField<BaseRecord> Profile =
-        new ReferenceField<>(META, BaseRecord.META, "Profile", ProfileId);
+    public static final LongField PROFILE_ID = new LongField(META, "ProfileId", SFieldFlags.SPRIMARY_KEY);
+    public static final ReferenceField<BaseRecord> PROFILE =
+        new ReferenceField<>(META, BaseRecord.META, "Profile", PROFILE_ID);
 
     static {
         PASSWORD.getFormMeta().setEditorSource(PasswordEditorSource.getSharedInstance());
-        Profile.getFormMeta().setVisible(false);
+        PROFILE.getFormMeta().setVisible(false);
+        CONNECTURL.getFormMeta().setFieldDescriptionKey("RemoteDatabaseRecord.ConnectUri.Description");
     }
 
     // Create the category for our connection info
@@ -54,11 +55,11 @@ public class RemoteDatabaseRecord extends PersistentRecord {
     }
 
     // Define the accessors for the database settings
-    public void setUrl(String path) {
+    public void setUri(String path) {
         setString(CONNECTURL, path);
     }
 
-    public String getUrl() {
+    public String getUri() {
         return getString(CONNECTURL);
     }
 

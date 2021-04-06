@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import com.bwdesigngroup.neo4j.records.BaseRecord;
+import com.bwdesigngroup.neo4j.records.RemoteDatabaseRecord;
 import com.inductiveautomation.ignition.common.gson.Gson;
 
 import org.jetbrains.annotations.Nullable;
@@ -31,12 +33,14 @@ import org.slf4j.LoggerFactory;
 public class DatabaseConnector implements AutoCloseable
 {
     private final Driver driver;
+    private int SlowQueryThreshold;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public DatabaseConnector(String dbPath, String dbUser, String dbPass)
+    public DatabaseConnector(BaseRecord SettingsRecord, RemoteDatabaseRecord DatabaseRecord)
     {
         logger.debug("Creating driver connector");
+        this.SlowQueryThreshold = SettingsRecord.getSlowQueryThreshold();
 
         Config config = Config.builder()
             .withMaxConnectionLifetime( 30, TimeUnit.MINUTES )
@@ -45,8 +49,11 @@ public class DatabaseConnector implements AutoCloseable
             .withConnectionTimeout(15, TimeUnit.SECONDS)
             .build();
 
-        driver = GraphDatabase.driver( dbPath, AuthTokens.basic( dbUser, dbPass ), config );
-
+        if (DatabaseRecord.getUsername() != null) {
+            driver = GraphDatabase.driver( DatabaseRecord.getUri(), AuthTokens.basic( DatabaseRecord.getUsername(), DatabaseRecord.getPassword() ), config );
+        } else {
+            driver = GraphDatabase.driver( DatabaseRecord.getUri(), config );
+        }
     }
 
     public void updateQuery( final String query, @Nullable Map<String,Object> params)
@@ -66,7 +73,7 @@ public class DatabaseConnector implements AutoCloseable
                     result = tx.run(command, validatedParams);
                 }
                 
-                String summaryString = getResultSummaryString(result.consume());
+                String summaryString = getResultSummaryString(result.consume(), query);
                 
                 logger.debug(summaryString);
                 System.out.println(summaryString);
@@ -107,7 +114,7 @@ public class DatabaseConnector implements AutoCloseable
                             resultList.add(record.asMap());
                         }
                         
-                        String summaryString = getResultSummaryString(result.consume());
+                        String summaryString = getResultSummaryString(result.consume(), query);
                 
                         logger.debug(summaryString);
                         System.out.println(summaryString);
@@ -125,7 +132,7 @@ public class DatabaseConnector implements AutoCloseable
         return selectQuery(query, null);
     }
 
-    private String getResultSummaryString( ResultSummary summary) {
+    private String getResultSummaryString( ResultSummary summary, String query) {
 
         for (Notification message : summary.notifications()) {
             
@@ -138,6 +145,9 @@ public class DatabaseConnector implements AutoCloseable
         List<String> resultList = new ArrayList<String>();
 
         long duration = summary.resultAvailableAfter(TimeUnit.MILLISECONDS);
+        if ( duration > this.SlowQueryThreshold ) {
+            logger.warn("Slow Query took " + ( duration / 1000 ) + " seconds to execute: " + query);
+        }
 
         if ( counters.containsUpdates() ) {
             
