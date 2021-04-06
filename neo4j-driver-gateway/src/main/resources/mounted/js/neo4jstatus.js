@@ -3471,8 +3471,8 @@ var neo4jstatus =
 	        'a',
 	        { className: 'primary button',
 	            target: '_blank',
-	            href: 'https://google.com' },
-	        'Learn More'
+	            href: '/main/web/config/neo4j.neo4j' },
+	        'Add Connection'
 	    )]
 	};
 	
@@ -3509,8 +3509,17 @@ var neo4jstatus =
 	
 	            console.log("connections", connections);
 	            if (connections != null) {
+	                var validConnections = 0;
+	                var index;
+	                for (index = 0; index < connections.length; ++index) {
+	                    if (connections[index].ConnectionStatus == 'Valid') {
+	                        validConnections += 1;
+	                    }
+	                }
+	
 	                var HEADERS = [{ header: 'Connection Name', weight: 2 }, { header: 'Connection Type', weight: 1 }, { header: 'Connection Status', weight: 1 }];
 	                var connectionCount = connections.count;
+	                var validConnections = validConnections + "/" + connectionCount;
 	
 	                if (connectionCount > 0) {
 	                    var connectionList = connections.connections;
@@ -3541,16 +3550,6 @@ var neo4jstatus =
 	                                            { href: '/main/web/config/neo4j.neo4j' },
 	                                            'Configure'
 	                                        )
-	                                    ),
-	                                    _react2.default.createElement(
-	                                        'h6',
-	                                        null,
-	                                        'Systems'
-	                                    ),
-	                                    _react2.default.createElement(
-	                                        'h1',
-	                                        null,
-	                                        'Performance'
 	                                    )
 	                                )
 	                            )
@@ -3561,7 +3560,7 @@ var neo4jstatus =
 	                            _react2.default.createElement(
 	                                'div',
 	                                { className: 'small-12 medium-5 large-3 columns' },
-	                                _react2.default.createElement(_ignitionReact.Gauge, { label: 'Connections', value: connectionCount })
+	                                _react2.default.createElement(_ignitionReact.Gauge, { label: 'Valid Connections', value: validConnections })
 	                            )
 	                        ),
 	                        _react2.default.createElement(

@@ -173,7 +173,7 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
     }
 
     private RemoteDatabaseRecord getDatabaseRecord(BaseRecord SettingsRecord) {
-        return context.getPersistenceInterface().find(RemoteDatabaseRecord.META, SettingsRecord.getLong(BaseRecord.Id));
+        return context.getPersistenceInterface().find(RemoteDatabaseRecord.META, SettingsRecord.getId());
     }
 
     @Override

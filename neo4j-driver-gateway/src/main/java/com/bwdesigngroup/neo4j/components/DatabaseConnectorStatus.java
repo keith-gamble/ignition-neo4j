@@ -25,7 +25,6 @@ public class DatabaseConnectorStatus implements Runnable{
 
     private GatewayContext context;
     private GatewayHook gateway;
-    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public DatabaseConnectorStatus(GatewayContext context, GatewayHook gateway) {
         this.context = context;
@@ -36,12 +35,17 @@ public class DatabaseConnectorStatus implements Runnable{
     public void run() {
         List<BaseRecord> baseRecords = context.getPersistenceInterface().query(new SQuery<>(BaseRecord.META));
         for (BaseRecord SettingsRecord : baseRecords) {
-            DatabaseConnector connector = gateway.getConnector(SettingsRecord.getName());
-            boolean isConnected = connector.verifyConnectivity();
-            boolean enabled = SettingsRecord.getBoolean(BaseRecord.Enabled);
+            boolean enabled = SettingsRecord.getEnabled();
+            String status;
+            if (!enabled) {
+                status = "Disabled";
+            } else {
 
-            String status = (isConnected) ? "Valid" : "Faulted";
-            status = (enabled) ? status : "Disabled";
+                DatabaseConnector connector = gateway.getConnector(SettingsRecord.getName());
+                boolean isConnected = connector.verifyConnectivity();
+                status = (isConnected) ? "Valid" : "Faulted";
+            }
+
             SettingsRecord.setStatus(status);
             context.getPersistenceInterface().save(SettingsRecord);
         }

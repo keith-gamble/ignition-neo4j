@@ -16,7 +16,7 @@ const BLANK_STATE = {
 
     links: [<a className="primary button"
                target="_blank"
-               href="https://google.com">Learn More</a>
+               href="/main/web/config/neo4j.neo4j">Add Connection</a>
     ]
 };
 
@@ -42,12 +42,22 @@ class ConnectOverview extends Component {
         const {connections, connectionsError} = this.props;
         console.log("connections", connections);
         if (connections != null){
+            var validConnections = 0;
+            var index;
+            for (index = 0; index < connections.length; ++index) {
+                if ( connections[index].ConnectionStatus == 'Valid' ){
+                    validConnections += 1
+                }
+            }
+
+
             const HEADERS = [
                 { header: 'Connection Name', weight: 2 },
                 { header: 'Connection Type', weight: 1 },
                 { header: 'Connection Status', weight: 1 }
             ];
             const connectionCount = connections.count;
+            var validConnections = validConnections + "/" + connectionCount;
 
             if (connectionCount > 0){
                 const connectionList = connections.connections;
@@ -69,14 +79,12 @@ class ConnectOverview extends Component {
                                 <div className="quick-links">
                                     <a href="/main/web/config/neo4j.neo4j">Configure</a>
                                 </div>
-                                <h6>Systems</h6>
-                                <h1>Performance</h1>
                             </div>
                         </div>
                     </div>
                     <div className="row">
                         <div className="small-12 medium-5 large-3 columns">
-                            <Gauge label="Connections" value={connectionCount}/>
+                            <Gauge label="Valid Connections" value={validConnections}/>
                         </div>
                     </div>
                     <div className="row">

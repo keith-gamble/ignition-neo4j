@@ -15,19 +15,19 @@ import simpleorm.dataset.SFieldFlags;
 public class BaseRecord extends PersistentRecord {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     
-    public static final RecordMeta<BaseRecord> META = new RecordMeta<>(BaseRecord.class, "databaseConnection").setNounKey("BaseRecord.Noun").setNounPluralKey("BaseRecord.Noun.Plural");
+    public static final RecordMeta<BaseRecord> META = new RecordMeta<>(BaseRecord.class, "neo4j_databases").setNounKey("BaseRecord.Noun").setNounPluralKey("BaseRecord.Noun.Plural");
 
-    public static final IdentityField Id = new IdentityField(META);
-    public static final StringField Name = new StringField(META, "Name", SFieldFlags.SMANDATORY, SFieldFlags.SDESCRIPTIVE);
-    public static final StringField Type = new StringField(META, "Type", SFieldFlags.SMANDATORY, SFieldFlags.SDESCRIPTIVE);
-    public static final StringField Status = new StringField(META, "Status", SFieldFlags.SMANDATORY, SFieldFlags.SDESCRIPTIVE).setDefault("Created");
-    public static final BooleanField Enabled = new BooleanField(META, "Enabled", SFieldFlags.SMANDATORY).setDefault(true);
+    public static final IdentityField ID = new IdentityField(META);
+    public static final StringField NAME = new StringField(META, "Name", SFieldFlags.SMANDATORY, SFieldFlags.SDESCRIPTIVE);
+    public static final StringField TYPE = new StringField(META, "Type", SFieldFlags.SMANDATORY, SFieldFlags.SDESCRIPTIVE);
+    public static final StringField STATUS = new StringField(META, "Status", SFieldFlags.SMANDATORY, SFieldFlags.SDESCRIPTIVE).setDefault("Created");
+    public static final BooleanField ENABLED = new BooleanField(META, "Enabled", SFieldFlags.SMANDATORY).setDefault(true);
 
-    static final Category Main = new Category("BaseRecord.Category.Main", 1000).include(Id, Name, Enabled);
+    static final Category Main = new Category("BaseRecord.Category.Main", 1000).include(ID, NAME, ENABLED);
 
     static {
-        Type.getFormMeta().setVisible(false);
-        Status.getFormMeta().setVisible(false);
+        TYPE.getFormMeta().setVisible(false);
+        STATUS.getFormMeta().setVisible(false);
     }
 
     @Override
@@ -35,25 +35,29 @@ public class BaseRecord extends PersistentRecord {
         return META;
     } 
 
-    public IdentityField getId() {
-        return Id;
+    public Long getId() {
+        return getLong(ID);
     }
 
     public String getType() {
-        return getString(Type);
+        return getString(TYPE);
+    }
+
+    public boolean getEnabled() {
+        return getBoolean(ENABLED);
     }
 
     public String getName() {
-        return getString(Name);
+        return getString(NAME);
     }
 
     public String getStatus() {
-        return getString(Status);
+        return getString(STATUS);
     }
 
     public void setStatus(String status) {
         logger.debug("Setting status for " + this.getName() + " to " + status);
-        this.setString(Status, status);
+        this.setString(STATUS, status);
     }
 
 }
