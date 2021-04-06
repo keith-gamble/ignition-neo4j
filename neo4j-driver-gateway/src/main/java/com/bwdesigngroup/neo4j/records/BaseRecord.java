@@ -6,15 +6,21 @@ import com.inductiveautomation.ignition.gateway.localdb.persistence.IdentityFiel
 import com.inductiveautomation.ignition.gateway.localdb.persistence.PersistentRecord;
 import com.inductiveautomation.ignition.gateway.localdb.persistence.RecordMeta;
 import com.inductiveautomation.ignition.gateway.localdb.persistence.StringField;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import simpleorm.dataset.SFieldFlags;
 
 public class BaseRecord extends PersistentRecord {
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+    
     public static final RecordMeta<BaseRecord> META = new RecordMeta<>(BaseRecord.class, "databaseConnection").setNounKey("BaseRecord.Noun").setNounPluralKey("BaseRecord.Noun.Plural");
 
     public static final IdentityField Id = new IdentityField(META);
-    public static final StringField Type = new StringField(META, "Type", SFieldFlags.SMANDATORY, SFieldFlags.SDESCRIPTIVE);
     public static final StringField Name = new StringField(META, "Name", SFieldFlags.SMANDATORY, SFieldFlags.SDESCRIPTIVE);
-    public static final StringField Status = new StringField(META, "Status", SFieldFlags.SMANDATORY).setDefault("Created");
+    public static final StringField Type = new StringField(META, "Type", SFieldFlags.SMANDATORY, SFieldFlags.SDESCRIPTIVE);
+    public static final StringField Status = new StringField(META, "Status", SFieldFlags.SMANDATORY, SFieldFlags.SDESCRIPTIVE).setDefault("Created");
     public static final BooleanField Enabled = new BooleanField(META, "Enabled", SFieldFlags.SMANDATORY).setDefault(true);
 
     static final Category Main = new Category("BaseRecord.Category.Main", 1000).include(Id, Name, Enabled);
@@ -43,6 +49,11 @@ public class BaseRecord extends PersistentRecord {
 
     public String getStatus() {
         return getString(Status);
+    }
+
+    public void setStatus(String status) {
+        logger.debug("Setting status for " + this.getName() + " to " + status);
+        this.setString(Status, status);
     }
 
 }

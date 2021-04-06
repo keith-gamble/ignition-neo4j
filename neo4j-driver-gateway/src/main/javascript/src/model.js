@@ -78,7 +78,7 @@ export default reducer;
  */
 export function getConnectionsStatus(startNextPoll) {
     return function (dispatch) {
-        fetch(`/main/data/neo/status/connections`, {
+        fetch(`/main/data/neo4j/status/connections`, {
             method: 'get',
             credentials: 'same-origin',
             headers: {
@@ -104,7 +104,7 @@ export function getConnectionsStatus(startNextPoll) {
 export function getConnectionDetail(connectionName, startNextPoll) {
     const encodedConnectionName = encodeURIComponent(encodeURIComponent(connectionName));   // Needs to be double. Do this for anything that could be user generated
     return function (dispatch) {
-        fetch(`/main/data/neo/status/connections/${encodedConnectionName}`, {
+        fetch(`/main/data/neo4j/status/connections/${encodedConnectionName}`, {
             method: 'get',
             credentials: 'same-origin',
             headers: {

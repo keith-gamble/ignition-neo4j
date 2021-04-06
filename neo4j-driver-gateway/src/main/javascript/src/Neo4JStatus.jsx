@@ -7,6 +7,8 @@ import {pollWaitAck} from 'ignition-lib';
 import {getConnectionsStatus} from './model';
 import {BlankState, Gauge, ItemTable, Loading} from 'ignition-react';
 
+var propTypes = require('prop-types');
+
 const BLANK_STATE = {
     image: <img src="/main/res/alarm-notification/img/blank_alarms.png" alt=""/>,
     heading: 'There are no connections defined.',
@@ -42,7 +44,8 @@ class ConnectOverview extends Component {
         if (connections != null){
             const HEADERS = [
                 { header: 'Connection Name', weight: 2 },
-                { header: 'Connection Type', weight: 1 }
+                { header: 'Connection Type', weight: 1 },
+                { header: 'Connection Status', weight: 1 }
             ];
             const connectionCount = connections.count;
 
@@ -53,7 +56,8 @@ class ConnectOverview extends Component {
                     items = connectionList.map(function(connection){
                         return [
                             connection.ConnectionName,
-                            connection.ConnectionType
+                            connection.ConnectionType,
+                            connection.ConnectionStatus
                         ];
                     });
                 }
@@ -92,8 +96,8 @@ class ConnectOverview extends Component {
 }
 
 ConnectOverview.propTypes = {
-    connections: React.PropTypes.object,
-    connectionsError: React.PropTypes.string,
+    connections: propTypes.object,
+    connectionsError: propTypes.string,
 };
 
 function selector(state) {

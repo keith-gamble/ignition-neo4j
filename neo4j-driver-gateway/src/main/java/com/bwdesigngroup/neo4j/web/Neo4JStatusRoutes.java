@@ -1,7 +1,10 @@
 
 package com.bwdesigngroup.neo4j.web;
 
+import com.bwdesigngroup.neo4j.GatewayHook;
+import com.bwdesigngroup.neo4j.components.DatabaseConnector;
 import com.bwdesigngroup.neo4j.records.BaseRecord;
+import com.bwdesigngroup.neo4j.records.RemoteDatabaseRecord;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.dataroutes.RequestContext;
@@ -34,9 +37,11 @@ public class Neo4JStatusRoutes {
 
     private final LoggerEx log = LogUtil.getLogger(getClass().getSimpleName());
     private final RouteGroup routes;
+    private GatewayHook INSTANCE;
 
-    public Neo4JStatusRoutes(GatewayContext context, RouteGroup group) {
+    public Neo4JStatusRoutes(GatewayContext context, RouteGroup group, GatewayHook INSTANCE) {
         this.routes = group;
+        this.INSTANCE = INSTANCE;
     }
 
     public void mountRoutes() {
@@ -71,6 +76,7 @@ public class Neo4JStatusRoutes {
                         jsonArray.put(connectionJson);
                         connectionJson.put("ConnectionName", record.getName());
                         connectionJson.put("ConnectionType", record.getType());
+                        connectionJson.put("ConnectionStatus", record.getStatus());
                     }
                 }
             }
@@ -84,11 +90,12 @@ public class Neo4JStatusRoutes {
     // Any time the parameter is something that could have anything outside of a-zA-Z0-9, be sure to encode/decode the
     // parameter.
     public JSONObject getConnectionDetail(RequestContext requestContext, HttpServletResponse httpServletResponse, String connectionName) throws JSONException, UnsupportedEncodingException {
-        GatewayContext context = requestContext.getGatewayContext();
-        JSONObject json = new JSONObject();
         String decodedConnectionName = URLDecoder.decode(connectionName, "UTF-8");
-        // todo add functionality
-        json.put("connection", "Hello world from "+decodedConnectionName);
+        DatabaseConnector connector = INSTANCE.getConnector(decodedConnectionName);
+        JSONObject json = new JSONObject();
+        
+        boolean isValid = connector.verifyConnectivity();
+        json.put("connection", isValid);
         return json;
     }
 }

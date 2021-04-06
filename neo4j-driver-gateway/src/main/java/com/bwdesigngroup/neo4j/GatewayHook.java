@@ -9,9 +9,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.Optional;
 
 import com.bwdesigngroup.neo4j.components.DatabaseConnector;
+import com.bwdesigngroup.neo4j.components.DatabaseConnectorStatus;
 import com.bwdesigngroup.neo4j.records.BaseRecord;
 import com.bwdesigngroup.neo4j.records.RemoteDatabaseRecord;
 import com.bwdesigngroup.neo4j.web.Neo4JOverviewContributor;
@@ -54,7 +57,7 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
     private GatewayScriptModule scriptModule;
 
     private final Map<String, AbstractExtensionType> extensionPoints = Map.of(
-        "remote", new RemoteDatabaseRecord.RemoteDatabaseType()
+        "Remote", new RemoteDatabaseRecord.RemoteDatabaseType()
     );
     
     // private final Set<AbstractExtensionType> instances = new HashSet<>();
@@ -68,7 +71,7 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
      */
     private static final INamedTab NEO_STATUS_PAGE = new AbstractNamedTab(
             "neo4j",
-            StatusCategories.SYSTEMS,
+            StatusCategories.CONNECTIONS,
             "Neo4J.nav.status.header") {
 
         @Override
@@ -109,15 +112,15 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
     }
 
 
-    /**
-     * We'll add an overview contributor. This is optional -- only add if your module will provide meaningful info.
-     */
-    private final OverviewContributor overviewContributor = new Neo4JOverviewContributor();
+    // /**
+    //  * We'll add an overview contributor. This is optional -- only add if your module will provide meaningful info.
+    //  */
+    // private final OverviewContributor overviewContributor = new Neo4JOverviewContributor();
 
-    @Override
-    public Optional<OverviewContributor> getStatusOverviewContributor() {
-        return Optional.of(overviewContributor);
-    }
+    // @Override
+    // public Optional<OverviewContributor> getStatusOverviewContributor() {
+    //     return Optional.of(overviewContributor);
+    // }
 
     @Override
     public void setup(GatewayContext gatewayContext) {
@@ -182,6 +185,10 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
             DatabaseConnector dbConnector = new DatabaseConnector(rdr.getUrl(), rdr.getUsername(), rdr.getPassword());
             connectors.put(record.getName(), dbConnector);
         }
+
+        // Instantiate the executorService that will update the database statuses
+        context.getScheduledExecutorService().scheduleAtFixedRate(new DatabaseConnectorStatus(context, INSTANCE), 30, 10, TimeUnit.SECONDS);
+        
     }
 
     public DatabaseConnector getConnector(String connectorName) {
@@ -234,7 +241,7 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
     // Define your route handlers here
     @Override
     public void mountRouteHandlers(RouteGroup routes) {
-        new Neo4JStatusRoutes(context, routes).mountRoutes();
+        new Neo4JStatusRoutes(context, routes, INSTANCE).mountRoutes();
     }
 
     @Override
