@@ -29,24 +29,26 @@ import org.neo4j.driver.summary.SummaryCounters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class DatabaseConnector implements AutoCloseable
 {
     private final Driver driver;
-    private int SlowQueryThreshold;
+    private int slowQueryThreshold;
+    private int maxConnectionPoolSize;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public DatabaseConnector(BaseRecord SettingsRecord, RemoteDatabaseRecord DatabaseRecord)
     {
         logger.debug("Creating driver connector");
-        this.SlowQueryThreshold = SettingsRecord.getSlowQueryThreshold();
+        this.slowQueryThreshold = SettingsRecord.getSlowQueryThreshold();
+        this.maxConnectionPoolSize = SettingsRecord.getMaxConnectionPoolSize();
 
         Config config = Config.builder()
             .withMaxConnectionLifetime( 30, TimeUnit.MINUTES )
-            .withMaxConnectionPoolSize( 50 )
+            .withMaxConnectionPoolSize( this.maxConnectionPoolSize  )
             .withConnectionAcquisitionTimeout( 30, TimeUnit.MINUTES )
             .withConnectionTimeout(15, TimeUnit.SECONDS)
+            .withDriverMetrics()
             .build();
 
         if (DatabaseRecord.getUsername() != null) {
@@ -145,7 +147,7 @@ public class DatabaseConnector implements AutoCloseable
         List<String> resultList = new ArrayList<String>();
 
         long duration = summary.resultAvailableAfter(TimeUnit.MILLISECONDS);
-        if ( duration > this.SlowQueryThreshold ) {
+        if ( duration > this.slowQueryThreshold ) {
             logger.warn("Slow Query took " + ( duration / 1000 ) + " seconds to execute: " + query);
         }
 
@@ -241,6 +243,9 @@ public class DatabaseConnector implements AutoCloseable
         return true;
     }
 
+    public int getMaxConnectionPoolSize() {
+        return this.maxConnectionPoolSize;
+    }
 
     @Override
     public void close() throws Exception

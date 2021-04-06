@@ -29,6 +29,7 @@ public class BaseRecord extends PersistentRecord {
     // Initialize the advanced properties
     public static final IntField SLOW_QUERY_THRESHOLD = new IntField(META, "SlowQueryThreshold", SFieldFlags.SMANDATORY).setDefault(60000);
     public static final IntField VALIDATION_TIMEOUT = new IntField(META, "ValidationTimeout", SFieldFlags.SMANDATORY).setDefault(10000);
+    public static final IntField MAX_CONNECTION_POOL_SIZE = new IntField(META, "MaxConnectionPoolSize", SFieldFlags.SMANDATORY).setDefault(8);
 
     static final Category Main = new Category("BaseRecord.Category.Main", 1000).include(ID, NAME, ENABLED);
 
@@ -40,6 +41,7 @@ public class BaseRecord extends PersistentRecord {
         ENABLED.getFormMeta().setFieldDescriptionKey("BaseRecord.Enabled.Description");
         SLOW_QUERY_THRESHOLD.getFormMeta().setFieldDescriptionKey("BaseRecord.SlowQueryThreshold.Description");
         VALIDATION_TIMEOUT.getFormMeta().setFieldDescriptionKey("BaseRecord.ValidationTimeout.Description");
+        MAX_CONNECTION_POOL_SIZE.getFormMeta().setFieldDescriptionKey("BaseRecord.MaxConnectionPoolSize.Description");
     }
 
     @Override
@@ -69,6 +71,10 @@ public class BaseRecord extends PersistentRecord {
 
     public int getValidationTimeout() {
         return getInt(VALIDATION_TIMEOUT);
+    }
+
+    public int getMaxConnectionPoolSize() {
+        return getInt(MAX_CONNECTION_POOL_SIZE);
     }
 
     public String getStatus() {
