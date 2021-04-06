@@ -33,7 +33,7 @@ public class BaseRecord extends PersistentRecord {
 
     static final Category Main = new Category("BaseRecord.Category.Main", 1000).include(ID, NAME, ENABLED);
 
-    static final Category Advanced = new Category("BaseRecord.Category.Advanced", 9000, true).include(SLOW_QUERY_THRESHOLD, VALIDATION_TIMEOUT);
+    static final Category Advanced = new Category("BaseRecord.Category.Advanced", 9000, true).include(SLOW_QUERY_THRESHOLD, VALIDATION_TIMEOUT, MAX_CONNECTION_POOL_SIZE);
 
     static {
         TYPE.getFormMeta().setVisible(false);
