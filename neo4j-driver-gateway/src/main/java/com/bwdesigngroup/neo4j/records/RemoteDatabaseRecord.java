@@ -3,6 +3,7 @@ package com.bwdesigngroup.neo4j.records;
 
 import com.bwdesigngroup.neo4j.DatabaseRecordType;
 import com.bwdesigngroup.neo4j.instances.RemoteDatabaseInstance;
+import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.gateway.localdb.persistence.Category;
 import com.inductiveautomation.ignition.gateway.localdb.persistence.IdentityField;
 import com.inductiveautomation.ignition.gateway.localdb.persistence.LongField;
@@ -28,6 +29,7 @@ public class RemoteDatabaseRecord extends PersistentRecord {
         new ReferenceField<>(META, DatabaseRecord.META, "Profile", PROFILE_ID);
 
     static {
+        BundleUtil.get().addBundle("RemoteDatabaseRecord", RemoteDatabaseRecord.class, "RemoteDatabaseRecord");
         PASSWORD.getFormMeta().setEditorSource(PasswordEditorSource.getSharedInstance());
         PROFILE.getFormMeta().setVisible(false);
         CONNECTURL.getFormMeta().setFieldDescriptionKey("RemoteDatabaseRecord.ConnectUri.Description");
