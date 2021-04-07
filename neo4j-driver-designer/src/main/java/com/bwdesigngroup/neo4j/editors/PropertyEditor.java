@@ -1,0 +1,78 @@
+/*
+ * Copyright 2021 Keith Gamble
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+package com.bwdesigngroup.neo4j.editors;
+
+import javax.swing.JTextField;
+
+import com.bwdesigngroup.neo4j.resources.Neo4JProperties;
+import com.inductiveautomation.ignition.client.util.gui.HeaderLabel;
+import com.inductiveautomation.ignition.common.project.resource.ResourceType;
+import com.inductiveautomation.ignition.designer.propertyeditor.AbstractPropertyEditorPanel;
+
+import net.miginfocom.swing.MigLayout;
+
+/**
+ *
+ * @author Keith Gamble
+ */
+public class PropertyEditor extends AbstractPropertyEditorPanel {
+
+    private Neo4JProperties neo4jProps = new Neo4JProperties();
+    private final JTextField dataKeyTextField;
+
+    public PropertyEditor() {
+        super(new MigLayout("fill"));
+        
+        dataKeyTextField = new JTextField(16);
+        HeaderLabel dataKeyLabel = HeaderLabel.forKey("PropertyEditor.Database.Label");
+
+        add(dataKeyLabel, "wrap r");
+        add(dataKeyTextField, "gapleft 2lp, wrap u");
+        listenTo(dataKeyTextField);
+
+    }
+
+    @Override
+    public Object commit() {
+        System.out.println("Setting props value to: " + dataKeyTextField.getText());
+        neo4jProps.setText(dataKeyTextField.getText());
+        return neo4jProps;
+    }
+
+    @Override
+    public String getCategory() {
+        return "Project";
+    }
+
+    @Override
+    public ResourceType getResourceType() {
+        return neo4jProps.getResourceType();
+    }
+
+    @Override
+    public String getTitleKey() {
+        return "PropertyEditor.Title.Key";
+    }
+
+    @Override
+    public void initProps(Object props) {
+        if ( props == null ) {
+            System.out.println("props was null");
+            dataKeyTextField.setText("");
+        } else {
+            System.out.println("props was a record!");
+            Neo4JProperties updatedProps = (Neo4JProperties) props;
+
+            System.out.println("Updated props: " + updatedProps.getText());
+
+            this.neo4jProps = updatedProps;
+            
+            dataKeyTextField.setText(neo4jProps.getText());
+        }
+    }
+    
+}

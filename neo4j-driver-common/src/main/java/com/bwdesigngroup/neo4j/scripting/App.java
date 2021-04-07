@@ -2,15 +2,13 @@ package com.bwdesigngroup.neo4j.scripting;
 
 import java.util.Map;
 
+import org.python.core.PyObject;
+
 public interface App {
 
-    public void updateQuery(String connectionName, String query, Map<String,Object> params);
-    public void updateQuery(String connectionName, String query);
+    public void updateQuery(PyObject[] pyArgs, String[] keywords);
 
-    public Object selectQuery(String connectionName, String query, Map<String,Object> params);
-    public Object selectQuery(String connectionName, String query);
-
-    // public DatabaseConnector getDatabaseConnector(String connectionName);
+    public Object selectQuery(PyObject[] pyArgs, String[] keywords);
 }
 
 

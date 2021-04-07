@@ -93,7 +93,7 @@
                         </hook>
                         <hook>
                             <scope>D</scope>
-                            <hookClass>com.bwdesigngroup.neo4j.scripting.designer.DesignerHook</hookClass>
+                            <hookClass>com.bwdesigngroup.neo4j.DesignerHook</hookClass>
                         </hook>
                         <hook>
                             <scope>G</scope>
