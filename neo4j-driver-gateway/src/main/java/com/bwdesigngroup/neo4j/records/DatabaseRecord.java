@@ -1,5 +1,6 @@
 package com.bwdesigngroup.neo4j.records;
 
+import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.gateway.localdb.persistence.BooleanField;
 import com.inductiveautomation.ignition.gateway.localdb.persistence.Category;
 import com.inductiveautomation.ignition.gateway.localdb.persistence.IdentityField;
@@ -15,6 +16,7 @@ import simpleorm.dataset.SFieldFlags;
 
 public class DatabaseRecord extends PersistentRecord {
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    
     
     public static final RecordMeta<DatabaseRecord> META = new RecordMeta<>(DatabaseRecord.class, "neo4j_databases").setNounKey("DatabaseRecord.Noun").setNounPluralKey("DatabaseRecord.Noun.Plural");
 
@@ -37,6 +39,8 @@ public class DatabaseRecord extends PersistentRecord {
     static final Category Advanced = new Category("DatabaseRecord.Category.Advanced", 9000, true).include(SLOW_QUERY_THRESHOLD, VALIDATION_TIMEOUT, MAX_CONNECTION_POOL_SIZE);
 
     static {
+        BundleUtil.get().addBundle("DatabaseRecord", DatabaseRecord.class, "DatabaseRecord");
+        
         TYPE.getFormMeta().setVisible(false);
         STATUS.getFormMeta().setVisible(false);
         ENABLED.getFormMeta().setFieldDescriptionKey("DatabaseRecord.Enabled.Description");

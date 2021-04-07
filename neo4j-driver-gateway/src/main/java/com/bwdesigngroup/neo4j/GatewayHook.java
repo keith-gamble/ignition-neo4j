@@ -134,8 +134,8 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
 
         // listen for updates to the settings record...
         DatabaseRecord.META.addRecordListener(new IRecordListener<DatabaseRecord>() {
-            @Override
-            public void recordUpdated(DatabaseRecord SettingsRecord) {
+
+            private void updateConnector(DatabaseRecord SettingsRecord) {
                 RemoteDatabaseRecord remoteRecord = getDatabaseRecord(SettingsRecord);
                 DatabaseConnector dbConnector = new DatabaseConnector(SettingsRecord, remoteRecord);
                 connectors.put(SettingsRecord.getName(), dbConnector);
@@ -143,10 +143,13 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
             }
 
             @Override
+            public void recordUpdated(DatabaseRecord SettingsRecord) {
+                updateConnector(SettingsRecord);
+            }
+
+            @Override
             public void recordAdded(DatabaseRecord jSettingsRecord) {
-                RemoteDatabaseRecord remoteRecord = getDatabaseRecord(jSettingsRecord);
-                DatabaseConnector dbConnector = new DatabaseConnector(jSettingsRecord, remoteRecord);
-                connectors.put(jSettingsRecord.getName(), dbConnector);
+                updateConnector(jSettingsRecord);
             }
 
             @Override
