@@ -13,10 +13,10 @@ import org.slf4j.LoggerFactory;
 
 import simpleorm.dataset.SFieldFlags;
 
-public class BaseRecord extends PersistentRecord {
+public class DatabaseRecord extends PersistentRecord {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     
-    public static final RecordMeta<BaseRecord> META = new RecordMeta<>(BaseRecord.class, "neo4j_databases").setNounKey("BaseRecord.Noun").setNounPluralKey("BaseRecord.Noun.Plural");
+    public static final RecordMeta<DatabaseRecord> META = new RecordMeta<>(DatabaseRecord.class, "neo4j_databases").setNounKey("DatabaseRecord.Noun").setNounPluralKey("DatabaseRecord.Noun.Plural");
 
 
     // Initialize the  main properties
@@ -32,18 +32,18 @@ public class BaseRecord extends PersistentRecord {
     public static final IntField VALIDATION_TIMEOUT = new IntField(META, "ValidationTimeout", SFieldFlags.SMANDATORY).setDefault(10000);
     public static final IntField MAX_CONNECTION_POOL_SIZE = new IntField(META, "MaxConnectionPoolSize", SFieldFlags.SMANDATORY).setDefault(8);
 
-    static final Category Main = new Category("BaseRecord.Category.Main", 1000).include(ID, NAME, DATABASE, ENABLED);
+    static final Category Main = new Category("DatabaseRecord.Category.Main", 1000).include(ID, NAME, DATABASE, ENABLED);
 
-    static final Category Advanced = new Category("BaseRecord.Category.Advanced", 9000, true).include(SLOW_QUERY_THRESHOLD, VALIDATION_TIMEOUT, MAX_CONNECTION_POOL_SIZE);
+    static final Category Advanced = new Category("DatabaseRecord.Category.Advanced", 9000, true).include(SLOW_QUERY_THRESHOLD, VALIDATION_TIMEOUT, MAX_CONNECTION_POOL_SIZE);
 
     static {
         TYPE.getFormMeta().setVisible(false);
         STATUS.getFormMeta().setVisible(false);
-        ENABLED.getFormMeta().setFieldDescriptionKey("BaseRecord.Enabled.Description");
-        DATABASE.getFormMeta().setFieldDescriptionKey("BaseRecord.Database.Description");
-        SLOW_QUERY_THRESHOLD.getFormMeta().setFieldDescriptionKey("BaseRecord.SlowQueryThreshold.Description");
-        VALIDATION_TIMEOUT.getFormMeta().setFieldDescriptionKey("BaseRecord.ValidationTimeout.Description");
-        MAX_CONNECTION_POOL_SIZE.getFormMeta().setFieldDescriptionKey("BaseRecord.MaxConnectionPoolSize.Description");
+        ENABLED.getFormMeta().setFieldDescriptionKey("DatabaseRecord.Enabled.Description");
+        DATABASE.getFormMeta().setFieldDescriptionKey("DatabaseRecord.Database.Description");
+        SLOW_QUERY_THRESHOLD.getFormMeta().setFieldDescriptionKey("DatabaseRecord.SlowQueryThreshold.Description");
+        VALIDATION_TIMEOUT.getFormMeta().setFieldDescriptionKey("DatabaseRecord.ValidationTimeout.Description");
+        MAX_CONNECTION_POOL_SIZE.getFormMeta().setFieldDescriptionKey("DatabaseRecord.MaxConnectionPoolSize.Description");
     }
 
     @Override

@@ -3,7 +3,7 @@ package com.bwdesigngroup.neo4j.web;
 
 import com.bwdesigngroup.neo4j.GatewayHook;
 import com.bwdesigngroup.neo4j.components.DatabaseConnector;
-import com.bwdesigngroup.neo4j.records.BaseRecord;
+import com.bwdesigngroup.neo4j.records.DatabaseRecord;
 import com.bwdesigngroup.neo4j.records.RemoteDatabaseRecord;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -25,14 +25,6 @@ import java.net.URLDecoder;
 
 import static com.inductiveautomation.ignition.gateway.dataroutes.RouteGroup.TYPE_JSON;
 
-/**
- * Filename: HomeConnectStatusRoutes
- * Created on 9/22/16
- * Author: Kathy Applebaum
- * Copyright: Inductive Automation 2016
- * Project: home-connect-example
- * <p/>
- */
 public class Neo4JStatusRoutes {
 
     private final LoggerEx log = LogUtil.getLogger(getClass().getSimpleName());
@@ -57,13 +49,13 @@ public class Neo4JStatusRoutes {
         JSONObject json = new JSONObject();
         PersistenceSession session = context.getPersistenceInterface().getSession();
         try {
-            SQuery<BaseRecord> query = new SQuery<>(BaseRecord.META);
-            List<BaseRecord> connectionList = session.query(query);
+            SQuery<DatabaseRecord> query = new SQuery<>(DatabaseRecord.META);
+            List<DatabaseRecord> connectionList = session.query(query);
             if (connectionList != null){
                 json.put("count", connectionList.size());
                 JSONArray jsonArray = new JSONArray();
                 json.put("connections", jsonArray);
-                for (BaseRecord record : connectionList){
+                for (DatabaseRecord record : connectionList){
                     if (record != null) {
                         DatabaseConnector dbConnector = INSTANCE.getConnector(record.getName());
                         JSONObject connectionJson = new JSONObject();

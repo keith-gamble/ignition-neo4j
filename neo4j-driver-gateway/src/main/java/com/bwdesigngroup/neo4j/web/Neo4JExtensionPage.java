@@ -1,7 +1,7 @@
 package com.bwdesigngroup.neo4j.web;
 
 import com.bwdesigngroup.neo4j.GatewayHook;
-import com.bwdesigngroup.neo4j.records.BaseRecord;
+import com.bwdesigngroup.neo4j.records.DatabaseRecord;
 import com.inductiveautomation.ignition.gateway.localdb.persistence.RecordMeta;
 import com.inductiveautomation.ignition.gateway.model.ExtensionPointManager;
 import com.inductiveautomation.ignition.gateway.web.components.ExtensionPointPage;
@@ -10,7 +10,7 @@ import com.inductiveautomation.ignition.gateway.web.models.DefaultConfigTab;
 import com.inductiveautomation.ignition.gateway.web.models.IConfigTab;
 import com.inductiveautomation.ignition.gateway.web.pages.IConfigPage;
 
-public class Neo4JExtensionPage extends ExtensionPointPage<BaseRecord> {
+public class Neo4JExtensionPage extends ExtensionPointPage<DatabaseRecord> {
     public static final ConfigCategory CONFIG_CATEGORY =new ConfigCategory("Neo4J", "Neo4J.nav.header", 700);
 
 
@@ -33,7 +33,7 @@ public class Neo4JExtensionPage extends ExtensionPointPage<BaseRecord> {
     }
 
     @Override
-    protected RecordMeta<BaseRecord> getRecordMeta() {
-        return BaseRecord.META;
+    protected RecordMeta<DatabaseRecord> getRecordMeta() {
+        return DatabaseRecord.META;
     }
 }
