@@ -5,25 +5,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.Optional;
 
 import com.bwdesigngroup.neo4j.components.DatabaseConnector;
 import com.bwdesigngroup.neo4j.components.DatabaseConnectorStatus;
-import com.bwdesigngroup.neo4j.records.BaseRecord;
+import com.bwdesigngroup.neo4j.records.DatabaseRecord;
 import com.bwdesigngroup.neo4j.records.RemoteDatabaseRecord;
 import com.bwdesigngroup.neo4j.resources.Neo4JProperties;
-import com.bwdesigngroup.neo4j.web.Neo4JOverviewContributor;
 import com.bwdesigngroup.neo4j.web.Neo4JStatusRoutes;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.ProjectInvalidException;
-import com.inductiveautomation.ignition.common.project.RuntimeProject;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.script.hints.PropertiesFileDocProvider;
 import com.inductiveautomation.ignition.common.util.ResourceUtil;
@@ -41,7 +36,6 @@ import com.inductiveautomation.ignition.gateway.web.models.INamedTab;
 import com.inductiveautomation.ignition.gateway.web.models.KeyValue;
 import com.inductiveautomation.ignition.gateway.web.pages.BasicReactPanel;
 import com.inductiveautomation.ignition.gateway.web.pages.status.StatusCategories;
-import com.inductiveautomation.ignition.gateway.web.pages.status.overviewmeta.OverviewContributor;
 
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.slf4j.Logger;
@@ -60,7 +54,7 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
 
     private GatewayScriptModule scriptModule;
 
-    private final Map<String, AbstractExtensionType> extensionPoints = Map.of(
+    private final Map<String, DatabaseRecordType> extensionPoints = Map.of(
         "Remote", new RemoteDatabaseRecord.RemoteDatabaseType()
     );
     
@@ -132,8 +126,6 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
         INSTANCE = this;
         scriptModule = new GatewayScriptModule(INSTANCE);
 
-        logger.debug("Beginning setup of Neo4J Module");
-
         // Register GatewayHook.properties by registering the GatewayHook.class with BundleUtils
         BundleUtil.get().addBundle("Neo4J", getClass(), "Neo4J");
 
@@ -141,9 +133,9 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
         verifySchema(context);
 
         // listen for updates to the settings record...
-        BaseRecord.META.addRecordListener(new IRecordListener<BaseRecord>() {
+        DatabaseRecord.META.addRecordListener(new IRecordListener<DatabaseRecord>() {
             @Override
-            public void recordUpdated(BaseRecord SettingsRecord) {
+            public void recordUpdated(DatabaseRecord SettingsRecord) {
                 RemoteDatabaseRecord remoteRecord = getDatabaseRecord(SettingsRecord);
                 DatabaseConnector dbConnector = new DatabaseConnector(SettingsRecord, remoteRecord);
                 connectors.put(SettingsRecord.getName(), dbConnector);
@@ -151,21 +143,18 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
             }
 
             @Override
-            public void recordAdded(BaseRecord jSettingsRecord) {
+            public void recordAdded(DatabaseRecord jSettingsRecord) {
                 RemoteDatabaseRecord remoteRecord = getDatabaseRecord(jSettingsRecord);
                 DatabaseConnector dbConnector = new DatabaseConnector(jSettingsRecord, remoteRecord);
                 connectors.put(jSettingsRecord.getName(), dbConnector);
-                logger.info("recordAdded()");
             }
 
             @Override
             public void recordDeleted(KeyValue keyValue) {
-                logger.info("recordDeleted()");
+                return;
             }
         });
 
-
-        logger.debug("Setup Complete.");
     }
 
     private Neo4JProperties getProjectSettings(String projectName) {
@@ -194,21 +183,20 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
 
     private void verifySchema(GatewayContext context) {
         try {
-            context.getSchemaUpdater().updatePersistentRecords(BaseRecord.META, RemoteDatabaseRecord.META);
+            context.getSchemaUpdater().updatePersistentRecords(DatabaseRecord.META, RemoteDatabaseRecord.META);
         } catch (SQLException e) {
             logger.error("Error verifying persistent record schemas for Neo4J records.", e);
         }
     }
 
-    private RemoteDatabaseRecord getDatabaseRecord(BaseRecord SettingsRecord) {
+    private RemoteDatabaseRecord getDatabaseRecord(DatabaseRecord SettingsRecord) {
         return context.getPersistenceInterface().find(RemoteDatabaseRecord.META, SettingsRecord.getId());
     }
 
     @Override
     public void startup(LicenseState licenseState) {
-        logger.info("startup()");
-        List<BaseRecord> baseRecords = context.getPersistenceInterface().query(new SQuery<>(BaseRecord.META));
-        for (BaseRecord SettingsRecord : baseRecords) {
+        List<DatabaseRecord> baseRecords = context.getPersistenceInterface().query(new SQuery<>(DatabaseRecord.META));
+        for (DatabaseRecord SettingsRecord : baseRecords) {
             RemoteDatabaseRecord remoteRecord = getDatabaseRecord(SettingsRecord);
             try {                
                 DatabaseConnector dbConnector = new DatabaseConnector(SettingsRecord, remoteRecord);
@@ -225,9 +213,12 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
         return connectors.getOrDefault(connectorName, null);
     }
 
+    public List<String> getConnectionList() {
+        return new ArrayList<String>(connectors.keySet());
+    }
+
     @Override
     public void shutdown() {
-        logger.info("shutdown()");
         BundleUtil.get().removeBundle("Neo4J");
     }
 
@@ -243,7 +234,7 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
     @Override
     public Object getRPCHandler(ClientReqSession session, String projectName) {
         Neo4JProperties properties = getProjectSettings(projectName);
-        scriptModule.setDefaultConnector(properties.getText());
+        scriptModule.setDefaultConnector(properties.getDefaultDatabase());
         return scriptModule;
     }
 

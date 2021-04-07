@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import com.bwdesigngroup.neo4j.GatewayHook;
-import com.bwdesigngroup.neo4j.records.BaseRecord;
+import com.bwdesigngroup.neo4j.records.DatabaseRecord;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 import org.slf4j.Logger;
@@ -38,7 +38,7 @@ public class DatabaseConnectorStatus implements Runnable {
 
     @Override
     public void run(){
-        BaseRecord SettingsRecord = context.getPersistenceInterface().queryOne(new SQuery<>(BaseRecord.META).eq(BaseRecord.ID, Id));
+        DatabaseRecord SettingsRecord = context.getPersistenceInterface().queryOne(new SQuery<>(DatabaseRecord.META).eq(DatabaseRecord.ID, Id));
         if ( SettingsRecord != null ) {
             boolean enabled = SettingsRecord.getEnabled();
             String status;

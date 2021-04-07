@@ -6,46 +6,81 @@
 */
 package com.bwdesigngroup.neo4j.editors;
 
+import java.util.List;
+
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
+
+import com.bwdesigngroup.neo4j.components.DatabaseDropdown;
 import com.bwdesigngroup.neo4j.resources.Neo4JProperties;
+import com.bwdesigngroup.neo4j.scripting.ScriptingFunctions;
+import com.inductiveautomation.ignition.common.BundleUtil;
+import com.inductiveautomation.ignition.client.gateway_interface.ModuleRPCFactory;
+import com.inductiveautomation.ignition.client.util.gui.AbstractProfileOptionDropdown;
+import com.inductiveautomation.ignition.client.util.gui.AntialiasLabel;
 import com.inductiveautomation.ignition.client.util.gui.HeaderLabel;
 import com.inductiveautomation.ignition.common.project.resource.ResourceType;
+import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.propertyeditor.AbstractPropertyEditorPanel;
 
 import net.miginfocom.swing.MigLayout;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Keith Gamble
  */
-public class PropertyEditor extends AbstractPropertyEditorPanel {
+public class GeneralPropertyEditor extends AbstractPropertyEditorPanel {
 
+    private final ScriptingFunctions rpc;
     private Neo4JProperties neo4jProps = new Neo4JProperties();
-    private final JTextField dataKeyTextField;
+    private final DatabaseDropdown dropdown;
 
-    public PropertyEditor() {
-        super(new MigLayout("fill"));
-        
-        dataKeyTextField = new JTextField(16);
-        HeaderLabel dataKeyLabel = HeaderLabel.forKey("PropertyEditor.Database.Label");
+    public GeneralPropertyEditor(DesignerContext context) {
+        super(new MigLayout("fill", "[pref!][grow,fill]", "[]15[]"));
 
-        add(dataKeyLabel, "wrap r");
-        add(dataKeyTextField, "gapleft 2lp, wrap u");
-        listenTo(dataKeyTextField);
+        rpc = ModuleRPCFactory.create(
+            "com.bwdesigngroup.neo4j.neo4j-driver",
+            ScriptingFunctions.class
+        );
+        dropdown = new DatabaseDropdown(false, rpc);
 
+
+        add(HeaderLabel.forKey("GeneralPropertyEditor.Database.Header"), "wrap r");
+
+        add(new JLabel(BundleUtil.get().getString("GeneralPropertyEditor.Database.Label")), "");
+        add(dropdown, "wrap");
+        listenTo(dropdown.getDropdown());
+
+
+    }
+
+    public List<String> getConnections() {
+        return rpc.getConnections();
     }
 
     @Override
     public Object commit() {
-        System.out.println("Setting props value to: " + dataKeyTextField.getText());
-        neo4jProps.setText(dataKeyTextField.getText());
+        if ( dropdown.getSelectedIndex() != -1 ) {
+            neo4jProps.setDefaultDatabase(dropdown.getSelectedItem().toString());
+        } else {
+            return null;
+        }
+        
         return neo4jProps;
     }
 
     @Override
     public String getCategory() {
-        return "Project";
+        return "Neo4J";
     }
 
     @Override
@@ -55,23 +90,18 @@ public class PropertyEditor extends AbstractPropertyEditorPanel {
 
     @Override
     public String getTitleKey() {
-        return "PropertyEditor.Title.Key";
+        return "GeneralPropertyEditor.General.Title";
     }
 
     @Override
     public void initProps(Object props) {
         if ( props == null ) {
-            System.out.println("props was null");
-            dataKeyTextField.setText("");
+            dropdown.setSelectedItem(null);
         } else {
-            System.out.println("props was a record!");
             Neo4JProperties updatedProps = (Neo4JProperties) props;
-
-            System.out.println("Updated props: " + updatedProps.getText());
-
             this.neo4jProps = updatedProps;
-            
-            dataKeyTextField.setText(neo4jProps.getText());
+    
+            dropdown.setSelectedItem(neo4jProps.getDefaultDatabase());
         }
     }
     

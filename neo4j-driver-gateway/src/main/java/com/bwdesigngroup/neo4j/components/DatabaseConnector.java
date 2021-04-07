@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.bwdesigngroup.neo4j.records.BaseRecord;
+import com.bwdesigngroup.neo4j.records.DatabaseRecord;
 import com.bwdesigngroup.neo4j.records.RemoteDatabaseRecord;
 import com.inductiveautomation.ignition.common.gson.Gson;
 
@@ -38,14 +38,14 @@ public class DatabaseConnector implements AutoCloseable
     private final Driver driver;
     private int slowQueryThreshold;
     private int maxConnectionPoolSize;
-    private BaseRecord SettingsRecord;
+    private DatabaseRecord SettingsRecord;
     private RemoteDatabaseRecord DatabaseRecord;
     private String Database;
     private SessionConfig sessionConfig;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public DatabaseConnector(BaseRecord settingsRecord, RemoteDatabaseRecord databaseRecord)
+    public DatabaseConnector(DatabaseRecord settingsRecord, RemoteDatabaseRecord databaseRecord)
     {
         this.SettingsRecord = settingsRecord;
         this.DatabaseRecord = databaseRecord;

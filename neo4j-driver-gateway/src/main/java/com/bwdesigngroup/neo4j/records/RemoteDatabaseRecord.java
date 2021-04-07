@@ -1,7 +1,7 @@
 package com.bwdesigngroup.neo4j.records;
 
 
-import com.bwdesigngroup.neo4j.AbstractExtensionType;
+import com.bwdesigngroup.neo4j.DatabaseRecordType;
 import com.bwdesigngroup.neo4j.instances.RemoteDatabaseInstance;
 import com.inductiveautomation.ignition.gateway.localdb.persistence.Category;
 import com.inductiveautomation.ignition.gateway.localdb.persistence.IdentityField;
@@ -24,8 +24,8 @@ public class RemoteDatabaseRecord extends PersistentRecord {
     public static final StringField PASSWORD = new StringField(META, "Password");
 
     public static final LongField PROFILE_ID = new LongField(META, "ProfileId", SFieldFlags.SPRIMARY_KEY);
-    public static final ReferenceField<BaseRecord> PROFILE =
-        new ReferenceField<>(META, BaseRecord.META, "Profile", PROFILE_ID);
+    public static final ReferenceField<DatabaseRecord> PROFILE =
+        new ReferenceField<>(META, DatabaseRecord.META, "Profile", PROFILE_ID);
 
     static {
         PASSWORD.getFormMeta().setEditorSource(PasswordEditorSource.getSharedInstance());
@@ -36,7 +36,7 @@ public class RemoteDatabaseRecord extends PersistentRecord {
     // Create the category for our connection info
     static final Category ConnectionInfo = new Category("RemoteDatabaseRecord.Category.Connection", 2000).include(CONNECTURL, USERNAME, PASSWORD);
 
-    public static class RemoteDatabaseType extends AbstractExtensionType {
+    public static class RemoteDatabaseType extends DatabaseRecordType {
         public RemoteDatabaseType() {
             super("Remote", "Remote DBMS", "A remote hosted Neo4J Database");
         }
@@ -48,7 +48,7 @@ public class RemoteDatabaseRecord extends PersistentRecord {
 
         @Override
         public
-        RemoteDatabaseInstance createNewInstance(GatewayContext context, BaseRecord baseRecord) {
+        RemoteDatabaseInstance createNewInstance(GatewayContext context, DatabaseRecord baseRecord) {
             RemoteDatabaseRecord childRecord = findProfileSettingsRecord(context, baseRecord);
             return new RemoteDatabaseInstance(baseRecord, childRecord);
         }

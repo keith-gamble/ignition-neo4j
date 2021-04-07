@@ -9,7 +9,7 @@ package com.bwdesigngroup.neo4j.web;
 import java.util.Collections;
 import java.util.List;
 
-import com.bwdesigngroup.neo4j.records.BaseRecord;
+import com.bwdesigngroup.neo4j.records.DatabaseRecord;
 import com.inductiveautomation.ignition.gateway.localdb.persistence.PersistenceSession;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 import com.inductiveautomation.ignition.gateway.web.pages.status.overviewmeta.InfoLine;
@@ -29,8 +29,8 @@ public class Neo4JOverviewContributor implements OverviewContributor {
         int connectionCount = 0;
         PersistenceSession session = context.getPersistenceInterface().getSession();
         try {
-            SQuery<BaseRecord> query = new SQuery<>(BaseRecord.META);
-            List<BaseRecord> connectionList = session.query(query);
+            SQuery<DatabaseRecord> query = new SQuery<>(DatabaseRecord.META);
+            List<DatabaseRecord> connectionList = session.query(query);
             if (connectionList != null){
                 connectionCount = connectionList.size();
             }

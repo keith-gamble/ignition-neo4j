@@ -4,28 +4,24 @@
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-package com.bwdesigngroup.neo4j.resources;
+package com.bwdesigngroup.neo4j.components;
 
-import com.inductiveautomation.ignition.common.project.resource.ResourceType;
+import com.inductiveautomation.ignition.designer.propertyeditor.CategoryPanel;
 
 /**
  *
  * @author Keith Gamble
  */
-public class Neo4JProperties {
-    public static final ResourceType RESOURCE_TYPE = new ResourceType("com.bwdesigngroup.neo4j", "Neo4JProperties");
+public class EditorCategory extends CategoryPanel {
+
+    @Override
+    public String getCategory() {
+        return "Neo4J";
+    }
+
+    @Override
+    public String getTitleKey() {
+        return "GeneralPropertyEditor.Category.Title";
+    }
     
-    private String defaultDatabase;
-
-    public ResourceType getResourceType() {
-        return RESOURCE_TYPE;
-    }
-
-    public String getDefaultDatabase() {
-        return defaultDatabase;
-    }
-
-    public void setDefaultDatabase(String database) {
-        defaultDatabase = database;
-    }
 }
