@@ -43,7 +43,6 @@ public class GatewayScriptModule extends ScriptModule {
     public void updateQueryImpl(PyObject[] pyArgs, String[] keywords) {
         PyArgumentMap args = PyArgumentMap.interpretPyArgs(pyArgs, keywords, ScriptModule.class, "updateQuery"); 
         String datasourceName = args.getStringArg("database", getDefaultConnector());
-        logger.info("Default Datasource is " + getDefaultConnector());
         DatabaseConnector connector = getConnector(datasourceName);
         connector.updateQuery(args.getStringArg("query"), (Map<String,Object>) args.getArg("params"));
         return;
@@ -53,7 +52,6 @@ public class GatewayScriptModule extends ScriptModule {
     public Object selectQueryImpl(PyObject[] pyArgs, String[] keywords) {
         PyArgumentMap args = PyArgumentMap.interpretPyArgs(pyArgs, keywords, ScriptModule.class, "updateQuery"); 
         String datasourceName = args.getStringArg("database", getDefaultConnector());
-        logger.info("Default Datasource is " + getDefaultConnector());
         DatabaseConnector connector = getConnector(datasourceName);
         return connector.selectQuery(args.getStringArg("query"), (Map<String,Object>) args.getArg("params"));
 
