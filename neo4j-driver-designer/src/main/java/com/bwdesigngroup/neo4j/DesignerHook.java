@@ -1,8 +1,12 @@
 package com.bwdesigngroup.neo4j;
 
+import java.util.List;
+
 import com.bwdesigngroup.neo4j.components.EditorCategory;
 import com.bwdesigngroup.neo4j.editors.GeneralPropertyEditor;
+import com.bwdesigngroup.neo4j.scripting.ScriptingFunctions;
 import com.bwdesigngroup.neo4j.scripting.client.ClientScriptModule;
+import com.inductiveautomation.ignition.client.gateway_interface.ModuleRPCFactory;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
@@ -17,17 +21,15 @@ import org.slf4j.LoggerFactory;
 public class DesignerHook extends AbstractDesignerModuleHook {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-
+    private static final ClientScriptModule scriptModule = new ClientScriptModule();
+    private static final ScriptingFunctions rpc = ModuleRPCFactory.create("com.bwdesigngroup.neo4j.neo4j-driver", ScriptingFunctions.class);
     private DesignerContext context;
 
     @Override
     public void startup(DesignerContext context, LicenseState activationState) {
         this.context = context;
-        /* add our bundle to centralize strings and allow i18n support */
-        
         BundleUtil.get().addBundle("GeneralPropertyEditor", GeneralPropertyEditor.class, "GeneralPropertyEditor");
         init();
-        logger.debug("designer startup()");
     }
 
     public void init() {
@@ -35,12 +37,16 @@ public class DesignerHook extends AbstractDesignerModuleHook {
         context.addPropertyEditor(GeneralPropertyEditor.class);
     }
 
+   
 
     @Override
     public void shutdown() {
-        logger.debug("designer shutdown()");
+
     }
 
+    public static List<String> getConnectionsList() {
+        return rpc.getConnections();
+    }
 
     @Override
     public void initializeScriptManager(ScriptManager manager) {
@@ -48,7 +54,7 @@ public class DesignerHook extends AbstractDesignerModuleHook {
 
         manager.addScriptModule(
             "system.neo4j",
-            new ClientScriptModule(),
+            scriptModule,
             new PropertiesFileDocProvider()
         );
     }

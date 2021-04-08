@@ -10,6 +10,7 @@ import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
 
+import com.bwdesigngroup.neo4j.DesignerHook;
 import com.bwdesigngroup.neo4j.scripting.ScriptingFunctions;
 import com.inductiveautomation.ignition.client.gateway_interface.ModuleRPCFactory;
 import com.inductiveautomation.ignition.client.util.gui.AbstractProfileOptionDropdown;
@@ -21,11 +22,9 @@ import com.inductiveautomation.ignition.common.BundleUtil;
  */
 public class DatabaseDropdown extends AbstractProfileOptionDropdown {
 
-    private ScriptingFunctions rpc;
 
-    public DatabaseDropdown(boolean initialize, ScriptingFunctions rpc) {
+    public DatabaseDropdown(boolean initialize) {
         super(initialize);
-        this.rpc = rpc;
         this.allowNone = true;
 
         BundleUtil propertiesBundle = BundleUtil.get();
@@ -38,15 +37,7 @@ public class DatabaseDropdown extends AbstractProfileOptionDropdown {
 
     @Override
     protected List<String> getOptions() throws Exception {
-        return getConnections();
-    }
-
-    private List<String> getConnections() {
-        return rpc.getConnections();
-    }
-
-    public void setOptions() {
-        this.dropdown.setModel(new DefaultComboBoxModel<String>(getConnections().toArray(new String[0])));
+        return DesignerHook.getConnectionsList();
     }
 
     public int getSelectedIndex() {

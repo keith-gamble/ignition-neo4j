@@ -16,7 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
-
+import com.bwdesigngroup.neo4j.DesignerHook;
 import com.bwdesigngroup.neo4j.components.DatabaseDropdown;
 import com.bwdesigngroup.neo4j.resources.Neo4JProperties;
 import com.bwdesigngroup.neo4j.scripting.ScriptingFunctions;
@@ -40,41 +40,24 @@ import org.slf4j.LoggerFactory;
  */
 public class GeneralPropertyEditor extends AbstractPropertyEditorPanel {
 
-    private final ScriptingFunctions rpc;
-    private Neo4JProperties neo4jProps = new Neo4JProperties();
     private final DatabaseDropdown dropdown;
 
     public GeneralPropertyEditor(DesignerContext context) {
         super(new MigLayout("fill", "[pref!][grow,fill]", "[]15[]"));
-
-        rpc = ModuleRPCFactory.create(
-            "com.bwdesigngroup.neo4j.neo4j-driver",
-            ScriptingFunctions.class
-        );
-        dropdown = new DatabaseDropdown(false, rpc);
-
-
         add(HeaderLabel.forKey("GeneralPropertyEditor.Database.Header"), "wrap r");
-
         add(new JLabel(BundleUtil.get().getString("GeneralPropertyEditor.Database.Label")), "");
+
+        dropdown = new DatabaseDropdown(false);
         add(dropdown, "wrap");
         listenTo(dropdown.getDropdown());
-
-
-    }
-
-    public List<String> getConnections() {
-        return rpc.getConnections();
     }
 
     @Override
     public Object commit() {
-        if ( dropdown.getSelectedIndex() != -1 ) {
+        Neo4JProperties neo4jProps = new Neo4JProperties();
+       try {
             neo4jProps.setDefaultDatabase(dropdown.getSelectedItem().toString());
-        } else {
-            return null;
-        }
-        
+        } catch (Exception e)  { }
         return neo4jProps;
     }
 
@@ -85,7 +68,7 @@ public class GeneralPropertyEditor extends AbstractPropertyEditorPanel {
 
     @Override
     public ResourceType getResourceType() {
-        return neo4jProps.getResourceType();
+        return Neo4JProperties.RESOURCE_TYPE;
     }
 
     @Override
@@ -98,10 +81,7 @@ public class GeneralPropertyEditor extends AbstractPropertyEditorPanel {
         if ( props == null ) {
             dropdown.setSelectedItem(null);
         } else {
-            Neo4JProperties updatedProps = (Neo4JProperties) props;
-            this.neo4jProps = updatedProps;
-    
-            dropdown.setSelectedItem(neo4jProps.getDefaultDatabase());
+            dropdown.setSelectedItem(((Neo4JProperties) props).getDefaultDatabase());
         }
     }
     
