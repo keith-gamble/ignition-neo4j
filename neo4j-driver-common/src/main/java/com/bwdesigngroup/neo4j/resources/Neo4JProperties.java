@@ -6,6 +6,7 @@
 */
 package com.bwdesigngroup.neo4j.resources;
 
+import com.inductiveautomation.ignition.common.gson.Gson;
 import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 
 /**
@@ -15,11 +16,8 @@ import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 public class Neo4JProperties {
     public static final ResourceType RESOURCE_TYPE = new ResourceType("com.bwdesigngroup.neo4j", "Neo4JProperties");
     
+    public static Gson gson = new Gson();
     private String defaultDatabase;
-
-    public ResourceType getResourceType() {
-        return RESOURCE_TYPE;
-    }
 
     public String getDefaultDatabase() {
         return defaultDatabase;
@@ -27,5 +25,10 @@ public class Neo4JProperties {
 
     public void setDefaultDatabase(String database) {
         defaultDatabase = database;
+    }
+
+    @Override
+    public String toString() {
+        return gson.toJson(this);
     }
 }

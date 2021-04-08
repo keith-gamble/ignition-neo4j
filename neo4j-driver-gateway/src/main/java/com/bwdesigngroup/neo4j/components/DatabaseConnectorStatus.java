@@ -27,17 +27,16 @@ public class DatabaseConnectorStatus implements Runnable {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private GatewayContext context;
-    private GatewayHook gateway;
     private Long Id;
 
-    public DatabaseConnectorStatus(GatewayContext context, GatewayHook gateway, Long RecordID) {
+    public DatabaseConnectorStatus(GatewayContext context, Long RecordID) {
         this.context = context;
-        this.gateway = gateway;
         this.Id = RecordID;
     }
 
     @Override
     public void run(){
+
         DatabaseRecord SettingsRecord = context.getPersistenceInterface().queryOne(new SQuery<>(DatabaseRecord.META).eq(DatabaseRecord.ID, Id));
         if ( SettingsRecord != null ) {
             boolean enabled = SettingsRecord.getEnabled();
@@ -45,7 +44,7 @@ public class DatabaseConnectorStatus implements Runnable {
             if (!enabled) {
                 status = "Disabled";
             } else {
-                DatabaseConnector connector = gateway.getConnector(SettingsRecord.getName());
+                DatabaseConnector connector = GatewayHook.getConnector(SettingsRecord.getName());
                 boolean isConnected = connector.isConnected();
                 status = (isConnected) ? "Valid" : "Faulted";
             }

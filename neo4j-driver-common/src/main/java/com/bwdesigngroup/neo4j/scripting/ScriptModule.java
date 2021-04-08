@@ -23,7 +23,7 @@ public abstract class ScriptModule implements ScriptingFunctions {
 
     @Override
     @ScriptFunction(docBundlePrefix = "ScriptModule")
-    @KeywordArgs(names={"query", "params", "database"}, types={String.class, Map.class, String.class})
+    @KeywordArgs(names={"query", "params", "database", "project"}, types={String.class, Map.class, String.class, String.class})
     public void updateQuery(PyObject[] pyArgs, String[] keywords) {
         updateQueryImpl(pyArgs, keywords);
         return;
@@ -32,7 +32,7 @@ public abstract class ScriptModule implements ScriptingFunctions {
 
     @Override
     @ScriptFunction(docBundlePrefix = "ScriptModule")
-    @KeywordArgs(names={"query", "params", "database"}, types={String.class, Map.class, String.class})
+    @KeywordArgs(names={"query", "params", "database", "project"}, types={String.class, Map.class, String.class, String.class})
     public Object selectQuery(PyObject[] pyArgs, String[] keywords) {
         return selectQueryImpl(pyArgs, keywords);
     }

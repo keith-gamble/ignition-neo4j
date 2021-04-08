@@ -19,6 +19,8 @@ import com.bwdesigngroup.neo4j.web.Neo4JStatusRoutes;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.ProjectInvalidException;
+import com.inductiveautomation.ignition.common.project.RuntimeProject;
+import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.script.hints.PropertiesFileDocProvider;
 import com.inductiveautomation.ignition.common.util.ResourceUtil;
@@ -38,6 +40,7 @@ import com.inductiveautomation.ignition.gateway.web.pages.BasicReactPanel;
 import com.inductiveautomation.ignition.gateway.web.pages.status.StatusCategories;
 
 import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.python.objectweb.asm.commons.StaticInitMerger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,20 +50,20 @@ import static com.bwdesigngroup.neo4j.web.Neo4JExtensionPage.CONFIG_CATEGORY;
 import static com.bwdesigngroup.neo4j.web.Neo4JExtensionPage.CONFIG_ENTRY;
 
 public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionPointManager  {
-    private GatewayContext context;
-    public static GatewayHook INSTANCE = null;
+    public static GatewayContext context;
+    public static GatewayHook INSTANCE;
+
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private GatewayScriptModule scriptModule;
+    private final GatewayScriptModule scriptModule = new GatewayScriptModule();
 
     private final Map<String, DatabaseRecordType> extensionPoints = Map.of(
         "Remote", new RemoteDatabaseRecord.RemoteDatabaseType()
     );
     
     // private final Set<AbstractExtensionType> instances = new HashSet<>();
-    private final Map<String, DatabaseConnector> connectors = new HashMap<String, DatabaseConnector>();
-
+    public static final Map<String, DatabaseConnector> CONNECTORS = new HashMap<String, DatabaseConnector>();
 
     /**
      * This sets up the status panel which we'll add to the statusPanels list. The controller will be
@@ -124,7 +127,6 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
     public void setup(GatewayContext gatewayContext) {
         this.context = gatewayContext;
         INSTANCE = this;
-        scriptModule = new GatewayScriptModule(INSTANCE);
 
         // Register GatewayHook.properties by registering the GatewayHook.class with BundleUtils
         BundleUtil.get().addBundle("Neo4J", getClass(), "Neo4J");
@@ -138,8 +140,8 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
             private void updateConnector(DatabaseRecord SettingsRecord) {
                 RemoteDatabaseRecord remoteRecord = getDatabaseRecord(SettingsRecord);
                 DatabaseConnector dbConnector = new DatabaseConnector(SettingsRecord, remoteRecord);
-                connectors.put(SettingsRecord.getName(), dbConnector);
-                context.getScheduledExecutorService().scheduleAtFixedRate(new DatabaseConnectorStatus(context, INSTANCE, SettingsRecord.getId()), 2, SettingsRecord.getValidationTimeout(), TimeUnit.MILLISECONDS);
+                CONNECTORS.put(SettingsRecord.getName(), dbConnector);
+                context.getScheduledExecutorService().scheduleAtFixedRate(new DatabaseConnectorStatus(context, SettingsRecord.getId()), 2, SettingsRecord.getValidationTimeout(), TimeUnit.MILLISECONDS);
             }
 
             @Override
@@ -158,30 +160,6 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
             }
         });
 
-    }
-
-    private Neo4JProperties getProjectSettings(String projectName) {
-        Neo4JProperties properties = context.getProjectManager()
-            .getProject(projectName)
-            .map(t -> {
-                try {
-                    return t.validateOrThrow();
-                } catch (ProjectInvalidException e) {
-                    e.printStackTrace();
-                }
-                return t;
-            })
-            .flatMap(project -> project.getSingletonResource(Neo4JProperties.RESOURCE_TYPE))
-            .map(resource -> {
-                try {
-                    return ResourceUtil.decodeOrNull(resource, context.createDeserializer(), Neo4JProperties.class);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return null;
-            })
-            .orElseGet(Neo4JProperties::new);
-        return properties;
     }
 
     private void verifySchema(GatewayContext context) {
@@ -203,21 +181,17 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
             RemoteDatabaseRecord remoteRecord = getDatabaseRecord(SettingsRecord);
             try {                
                 DatabaseConnector dbConnector = new DatabaseConnector(SettingsRecord, remoteRecord);
-                connectors.put(SettingsRecord.getName(), dbConnector);
+                CONNECTORS.put(SettingsRecord.getName(), dbConnector);
                 // Instantiate the executorService that will update the database statuse
-                context.getScheduledExecutorService().scheduleAtFixedRate(new DatabaseConnectorStatus(context, INSTANCE, SettingsRecord.getId()), 2, SettingsRecord.getValidationTimeout(), TimeUnit.MILLISECONDS);
+                context.getScheduledExecutorService().scheduleAtFixedRate(new DatabaseConnectorStatus(context, SettingsRecord.getId()), 2, SettingsRecord.getValidationTimeout(), TimeUnit.MILLISECONDS);
             } catch ( Exception e ) { 
                 logger.error("Unable to instantiate connection '" + SettingsRecord.getName() + "': " + e.getMessage());
             }
-        }        
+        }       
     }
 
-    public DatabaseConnector getConnector(String connectorName) {
-        return connectors.getOrDefault(connectorName, null);
-    }
-
-    public List<String> getConnectionList() {
-        return new ArrayList<String>(connectors.keySet());
+    public static DatabaseConnector getConnector(String connectorName) {
+        return GatewayHook.CONNECTORS.getOrDefault(connectorName, null);
     }
 
     @Override
@@ -234,10 +208,46 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
                 new PropertiesFileDocProvider());
     }
 
+    public static Neo4JProperties getProjectSettings(String projectName) throws ProjectInvalidException {
+        
+        RuntimeProject project = context.getProjectManager()
+        .getProject(projectName)
+        .orElseThrow() // throws NoSuchElementException if project not found
+        .validateOrThrow(); // throws ProjectInvalidException if the project is invalid
+    
+        Neo4JProperties properties = null;
+        Optional<ProjectResource> maybeResource = project.getSingletonResource(Neo4JProperties.RESOURCE_TYPE);
+        if (maybeResource.isPresent()) {
+            ProjectResource resource = maybeResource.get();
+            try {
+                properties = ResourceUtil.decodeOrNull(resource, context.createDeserializer(), Neo4JProperties.class);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            throw new RuntimeException("DatasourceName is not found");
+        }
+        
+        if (properties == null) {
+            properties = new Neo4JProperties();
+        }   
+        return properties;
+    }
+
+
     @Override
     public Object getRPCHandler(ClientReqSession session, String projectName) {
-        Neo4JProperties properties = getProjectSettings(projectName);
-        scriptModule.setDefaultConnector(properties.getDefaultDatabase());
+        Neo4JProperties projectProperties;
+        try {
+            projectProperties = getProjectSettings(projectName);
+        } catch (ProjectInvalidException e) {
+            projectProperties = null;
+         }
+
+        if ( projectProperties != null ) {
+            scriptModule.setProjectProperties(projectProperties);
+        }
+
         return scriptModule;
     }
 
@@ -267,7 +277,7 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
     // Define your route handlers here
     @Override
     public void mountRouteHandlers(RouteGroup routes) {
-        new Neo4JStatusRoutes(context, routes, INSTANCE).mountRoutes();
+        new Neo4JStatusRoutes(context, routes).mountRoutes();
     }
 
     @Override

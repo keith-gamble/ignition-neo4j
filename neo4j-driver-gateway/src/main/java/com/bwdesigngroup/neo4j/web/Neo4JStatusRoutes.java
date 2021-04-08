@@ -31,9 +31,8 @@ public class Neo4JStatusRoutes {
     private final RouteGroup routes;
     private GatewayHook INSTANCE;
 
-    public Neo4JStatusRoutes(GatewayContext context, RouteGroup group, GatewayHook INSTANCE) {
+    public Neo4JStatusRoutes(GatewayContext context, RouteGroup group) {
         this.routes = group;
-        this.INSTANCE = INSTANCE;
     }
 
     public void mountRoutes() {
@@ -57,7 +56,7 @@ public class Neo4JStatusRoutes {
                 json.put("connections", jsonArray);
                 for (DatabaseRecord record : connectionList){
                     if (record != null) {
-                        DatabaseConnector dbConnector = INSTANCE.getConnector(record.getName());
+                        DatabaseConnector dbConnector = GatewayHook.getConnector(record.getName());
                         JSONObject connectionJson = new JSONObject();
                         jsonArray.put(connectionJson);
                         connectionJson.put("ConnectionName", record.getName());
@@ -71,19 +70,6 @@ public class Neo4JStatusRoutes {
         } finally {
             session.close();
         }
-        return json;
-    }
-
-    // Not used in this example. Shown here as an example of using parameters passed in from javascript.
-    // Any time the parameter is something that could have anything outside of a-zA-Z0-9, be sure to encode/decode the
-    // parameter.
-    public JSONObject getConnectionDetail(RequestContext requestContext, HttpServletResponse httpServletResponse, String connectionName) throws JSONException, UnsupportedEncodingException {
-        String decodedConnectionName = URLDecoder.decode(connectionName, "UTF-8");
-        DatabaseConnector connector = INSTANCE.getConnector(decodedConnectionName);
-        JSONObject json = new JSONObject();
-        
-        boolean isValid = connector.isConnected();
-        json.put("connection", isValid);
         return json;
     }
 }
