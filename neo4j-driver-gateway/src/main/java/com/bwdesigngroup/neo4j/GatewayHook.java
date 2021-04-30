@@ -1,5 +1,8 @@
 package com.bwdesigngroup.neo4j;
 
+import static com.bwdesigngroup.neo4j.web.Neo4JExtensionPage.CONFIG_CATEGORY;
+import static com.bwdesigngroup.neo4j.web.Neo4JExtensionPage.CONFIG_ENTRY;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,8 +10,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import com.bwdesigngroup.neo4j.components.DatabaseConnector;
 import com.bwdesigngroup.neo4j.components.DatabaseConnectorStatus;
@@ -40,14 +43,10 @@ import com.inductiveautomation.ignition.gateway.web.pages.BasicReactPanel;
 import com.inductiveautomation.ignition.gateway.web.pages.status.StatusCategories;
 
 import org.apache.wicket.markup.html.WebMarkupContainer;
-import org.python.objectweb.asm.commons.StaticInitMerger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import simpleorm.dataset.SQuery;
-
-import static com.bwdesigngroup.neo4j.web.Neo4JExtensionPage.CONFIG_CATEGORY;
-import static com.bwdesigngroup.neo4j.web.Neo4JExtensionPage.CONFIG_ENTRY;
 
 public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionPointManager  {
     public static GatewayContext context;
@@ -224,8 +223,6 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        } else {
-            throw new RuntimeException("DatasourceName is not found");
         }
         
         if (properties == null) {

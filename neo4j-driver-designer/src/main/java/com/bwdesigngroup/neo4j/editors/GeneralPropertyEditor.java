@@ -6,33 +6,17 @@
 */
 package com.bwdesigngroup.neo4j.editors;
 
-import java.util.List;
-
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
 
-import com.bwdesigngroup.neo4j.DesignerHook;
 import com.bwdesigngroup.neo4j.components.DatabaseDropdown;
 import com.bwdesigngroup.neo4j.resources.Neo4JProperties;
-import com.bwdesigngroup.neo4j.scripting.ScriptingFunctions;
-import com.inductiveautomation.ignition.common.BundleUtil;
-import com.inductiveautomation.ignition.client.gateway_interface.ModuleRPCFactory;
-import com.inductiveautomation.ignition.client.util.gui.AbstractProfileOptionDropdown;
-import com.inductiveautomation.ignition.client.util.gui.AntialiasLabel;
 import com.inductiveautomation.ignition.client.util.gui.HeaderLabel;
+import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.project.resource.ResourceType;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.propertyeditor.AbstractPropertyEditorPanel;
 
 import net.miginfocom.swing.MigLayout;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -43,7 +27,7 @@ public class GeneralPropertyEditor extends AbstractPropertyEditorPanel {
     private final DatabaseDropdown dropdown;
 
     public GeneralPropertyEditor(DesignerContext context) {
-        super(new MigLayout("fill", "[pref!][grow,fill]", "[]15[]"));
+        super(new MigLayout("", "[pref!][grow,fill]", "[]15[]"));
         add(HeaderLabel.forKey("GeneralPropertyEditor.Database.Header"), "wrap r");
         add(new JLabel(BundleUtil.get().getString("GeneralPropertyEditor.Database.Label")), "");
 
