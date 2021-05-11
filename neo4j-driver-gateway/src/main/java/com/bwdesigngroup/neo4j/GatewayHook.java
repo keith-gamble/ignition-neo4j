@@ -231,6 +231,10 @@ public class GatewayHook extends AbstractGatewayModuleHook implements ExtensionP
         return properties;
     }
 
+    public static String getDefaultScriptingProject() {
+        return context.getSystemProperties().getGatewayScriptingProject();
+    }
+
 
     @Override
     public Object getRPCHandler(ClientReqSession session, String projectName) {

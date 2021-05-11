@@ -29,5 +29,4 @@ public class ClientHook extends AbstractClientModuleHook {
     public void shutdown() {
         super.shutdown();
     }
-
 }
