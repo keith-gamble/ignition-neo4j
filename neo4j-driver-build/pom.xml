@@ -84,7 +84,7 @@
                     <moduleVersion>${project.version}</moduleVersion>
                     <requiredIgnitionVersion>${ignition-platform-version}</requiredIgnitionVersion>
 
-                    <gatewayAddress>http://localhost:80</gatewayAddress>
+                    <!-- <gatewayAddress>http://localhost:80</gatewayAddress> -->
 
                     <hooks>
                         <hook>

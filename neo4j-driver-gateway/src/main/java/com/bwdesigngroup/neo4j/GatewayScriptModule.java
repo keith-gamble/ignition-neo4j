@@ -12,7 +12,6 @@ import com.inductiveautomation.ignition.common.script.builtin.PyArgumentMap;
 
 import org.jetbrains.annotations.Nullable;
 import org.python.core.PyObject;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +29,11 @@ public class GatewayScriptModule extends ScriptModule {
         
         if ( projectProperties != null ) {
             return projectProperties.getDefaultDatabase();
-        } else if ( projectName != null ) {
+        } else {
+            if ( projectName == null ) {
+                projectName = GatewayHook.getDefaultScriptingProject();
+            }
+
             try {
                 Neo4JProperties properties = GatewayHook.getProjectSettings(projectName);
                 return properties.getDefaultDatabase();
@@ -46,6 +49,7 @@ public class GatewayScriptModule extends ScriptModule {
 
     private DatabaseConnector getDatabaseConnector(String datasourceName) {
         if(datasourceName == null) {
+            
             throw new RuntimeException("Datasource is null");
         }
         return GatewayHook.getConnector(datasourceName);
