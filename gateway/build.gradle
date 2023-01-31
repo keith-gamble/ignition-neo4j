@@ -1,0 +1,24 @@
+
+plugins {
+	id "java"
+    id "java-library"
+}
+
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compileOnly(project(":common"))
+	compileOnly(project(":designer"))
+
+    compileOnly("com.inductiveautomation.ignitionsdk:ignition-common:${sdk_version}")
+    compileOnly("com.inductiveautomation.ignitionsdk:gateway-api:${sdk_version}")
+	compileOnly("com.inductiveautomation.ignitionsdk:driver-api:${sdk_version}")
+
+	implementation("org.neo4j.driver:neo4j-java-driver:4.2.3")
+}
+

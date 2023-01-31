@@ -1,0 +1,15 @@
+services:
+  ignition:
+    image: bwdesigngroup/ignition-docker:8.1.22
+    ports:
+      - 8088
+    environment:
+      - DEVELOPER_MODE=Y
+    volumes:
+      - ../build/Neo4J-Driver.unsigned.modl:/modules/Neo4J-Driver.unsigned.modl
+  neo4j:
+    image: neo4j:5.4.0
+    ports:
+      - 7474
+      - 7687
+    

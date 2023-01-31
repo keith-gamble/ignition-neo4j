@@ -1,0 +1,14 @@
+# Gradle build outputs
+build/
+
+# Gradle Wrapper
+gradle/wrapper/gradle-wrapper.jar
+
+# Gradle user home directory
+.gradle/
+
+# Local Gradle test cache
+.gradle-test-results/
+
+# Gradle Daemon logs
+.gradle-daemon/
