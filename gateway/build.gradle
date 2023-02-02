@@ -11,14 +11,29 @@ repositories {
 	mavenCentral()
 }
 
+configurations {
+    // configuration that holds jars to include in the jar
+    extraLibs
+}
+
+
 dependencies {
-	compileOnly(project(":common"))
-	compileOnly(project(":designer"))
+	compile(project(":common"))
+	compile(project(":designer"))
+
+	// Any dependencies added to the extraLibs configuration will be included in the jar
+	extraLibs group: 'org.neo4j.driver', name: 'neo4j-java-driver', version: '4.2.3'
+	configurations.compile.extendsFrom(configurations.extraLibs)
 
     compileOnly("com.inductiveautomation.ignitionsdk:ignition-common:${sdk_version}")
     compileOnly("com.inductiveautomation.ignitionsdk:gateway-api:${sdk_version}")
 	compileOnly("com.inductiveautomation.ignitionsdk:driver-api:${sdk_version}")
-
-	implementation("org.neo4j.driver:neo4j-java-driver:4.2.3")
+	
 }
 
+// Include the extraLibs configuration in the jar
+jar {
+    from {
+            configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
+        }
+}

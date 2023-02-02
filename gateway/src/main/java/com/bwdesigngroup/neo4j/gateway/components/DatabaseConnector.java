@@ -10,11 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.bwdesigngroup.neo4j.gateway.records.DatabaseRecord;
-import com.bwdesigngroup.neo4j.gateway.records.RemoteDatabaseRecord;
-
-import com.inductiveautomation.ignition.common.gson.Gson;
-
 import org.jetbrains.annotations.Nullable;
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.Config;
@@ -25,14 +20,18 @@ import org.neo4j.driver.Record;
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.SessionConfig;
+import org.neo4j.driver.SessionConfig.Builder;
 import org.neo4j.driver.Transaction;
 import org.neo4j.driver.TransactionWork;
-import org.neo4j.driver.SessionConfig.Builder;
 import org.neo4j.driver.summary.Notification;
 import org.neo4j.driver.summary.ResultSummary;
 import org.neo4j.driver.summary.SummaryCounters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.bwdesigngroup.neo4j.gateway.records.DatabaseRecord;
+import com.bwdesigngroup.neo4j.gateway.records.RemoteDatabaseRecord;
+import com.inductiveautomation.ignition.common.gson.Gson;
 
 public class DatabaseConnector implements AutoCloseable
 {
@@ -48,34 +47,45 @@ public class DatabaseConnector implements AutoCloseable
 
     public DatabaseConnector(DatabaseRecord settingsRecord, RemoteDatabaseRecord databaseRecord)
     {
-        this.SettingsRecord = settingsRecord;
-        this.DatabaseRecord = databaseRecord;
-        this.Database = settingsRecord.getDatabase();
-        this.slowQueryThreshold = settingsRecord.getSlowQueryThreshold();
-        this.maxConnectionPoolSize = settingsRecord.getMaxConnectionPoolSize();
+		try {
+			this.SettingsRecord = settingsRecord;
+			this.DatabaseRecord = databaseRecord;
+			this.Database = settingsRecord.getDatabase();
+			this.slowQueryThreshold = settingsRecord.getSlowQueryThreshold();
+			this.maxConnectionPoolSize = settingsRecord.getMaxConnectionPoolSize();
 
 
-        Builder configBuilder = SessionConfig.builder();
+			if (!this.SettingsRecord.getEnabled()) {
+				logger.info("DatabaseConnector is disabled for " + this.SettingsRecord.getName());
+				
+				throw new RuntimeException("DatabaseConnector is disabled for " + this.SettingsRecord.getName());
+			}
 
-        if ( this.Database != null ) {
-            configBuilder.withDatabase(this.Database);
-        }
+			Builder configBuilder = SessionConfig.builder();
 
-        this.sessionConfig = configBuilder.build();
+			if ( this.Database != null ) {
+				configBuilder.withDatabase(this.Database);
+			}
 
-        Config config = Config.builder()
-            .withMaxConnectionLifetime( 30, TimeUnit.MINUTES )
-            .withMaxConnectionPoolSize( this.maxConnectionPoolSize  )
-            .withConnectionAcquisitionTimeout( 30, TimeUnit.MINUTES )
-            .withConnectionTimeout(15, TimeUnit.SECONDS)
-            .withDriverMetrics()
-            .build();
+			this.sessionConfig = configBuilder.build();
 
-        if (DatabaseRecord.getUsername() != null) {
-            driver = GraphDatabase.driver( DatabaseRecord.getUri(), AuthTokens.basic( DatabaseRecord.getUsername(), DatabaseRecord.getPassword() ), config );
-        } else {
-            driver = GraphDatabase.driver( DatabaseRecord.getUri(), config );
-        }
+			Config config = Config.builder()
+				.withMaxConnectionLifetime( 30, TimeUnit.MINUTES )
+				.withMaxConnectionPoolSize( this.maxConnectionPoolSize  )
+				.withConnectionAcquisitionTimeout( 30, TimeUnit.MINUTES )
+				.withConnectionTimeout(15, TimeUnit.SECONDS)
+				.withDriverMetrics()
+				.build();
+
+			if (DatabaseRecord.getUsername() != null) {
+				driver = GraphDatabase.driver( DatabaseRecord.getUri(), AuthTokens.basic( DatabaseRecord.getUsername(), DatabaseRecord.getPassword() ), config );
+			} else {
+				driver = GraphDatabase.driver( DatabaseRecord.getUri(), config );
+			}
+		} catch (Exception e) {
+			logger.error("Error instantiating DatabaseConnector", e);
+			throw new RuntimeException(e);
+		}
     }
 
     public void updateQuery( final String query, @Nullable Map<String,Object> params)

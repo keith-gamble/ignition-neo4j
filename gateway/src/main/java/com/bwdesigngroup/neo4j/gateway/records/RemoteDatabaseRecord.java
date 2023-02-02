@@ -1,12 +1,9 @@
 package com.bwdesigngroup.neo4j.gateway.records;
 
-
 import com.bwdesigngroup.neo4j.gateway.DatabaseRecordType;
 import com.bwdesigngroup.neo4j.gateway.instances.RemoteDatabaseInstance;
-
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.gateway.localdb.persistence.Category;
-import com.inductiveautomation.ignition.gateway.localdb.persistence.IdentityField;
 import com.inductiveautomation.ignition.gateway.localdb.persistence.LongField;
 import com.inductiveautomation.ignition.gateway.localdb.persistence.PersistentRecord;
 import com.inductiveautomation.ignition.gateway.localdb.persistence.RecordMeta;

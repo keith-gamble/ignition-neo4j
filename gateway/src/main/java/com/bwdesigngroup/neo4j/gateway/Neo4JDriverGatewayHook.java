@@ -1,5 +1,8 @@
 package com.bwdesigngroup.neo4j.gateway;
 
+import static com.bwdesigngroup.neo4j.gateway.web.Neo4JExtensionPage.CONFIG_CATEGORY;
+import static com.bwdesigngroup.neo4j.gateway.web.Neo4JExtensionPage.CONFIG_ENTRY;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,22 +11,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
-import javax.servlet.http.HttpServletResponse;
+import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bwdesigngroup.neo4j.common.projectresources.Neo4JProperties;
 import com.bwdesigngroup.neo4j.gateway.components.DatabaseConnector;
-import com.bwdesigngroup.neo4j.gateway.components.DatabaseConnectorStatus;
 import com.bwdesigngroup.neo4j.gateway.records.DatabaseRecord;
 import com.bwdesigngroup.neo4j.gateway.records.RemoteDatabaseRecord;
 import com.bwdesigngroup.neo4j.gateway.web.Neo4JStatusRoutes;
-
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.ProjectInvalidException;
 import com.inductiveautomation.ignition.common.project.RuntimeProject;
-import com.inductiveautomation.ignition.common.project.resource.adapter.ResourceTypeAdapterRegistry;
 import com.inductiveautomation.ignition.common.project.resource.ProjectResource;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.script.hints.PropertiesFileDocProvider;
@@ -31,6 +32,7 @@ import com.inductiveautomation.ignition.common.util.ResourceUtil;
 import com.inductiveautomation.ignition.gateway.clientcomm.ClientReqSession;
 import com.inductiveautomation.ignition.gateway.dataroutes.RouteGroup;
 import com.inductiveautomation.ignition.gateway.localdb.persistence.IRecordListener;
+import com.inductiveautomation.ignition.gateway.localdb.persistence.PersistenceInterface;
 import com.inductiveautomation.ignition.gateway.model.AbstractGatewayModuleHook;
 import com.inductiveautomation.ignition.gateway.model.ExtensionPointManager;
 import com.inductiveautomation.ignition.gateway.model.ExtensionPointType;
@@ -40,21 +42,10 @@ import com.inductiveautomation.ignition.gateway.web.models.ConfigCategory;
 import com.inductiveautomation.ignition.gateway.web.models.IConfigTab;
 import com.inductiveautomation.ignition.gateway.web.models.INamedTab;
 import com.inductiveautomation.ignition.gateway.web.models.KeyValue;
-import com.inductiveautomation.ignition.gateway.web.models.SystemMap;
 import com.inductiveautomation.ignition.gateway.web.pages.BasicReactPanel;
-import com.inductiveautomation.ignition.gateway.web.pages.config.overviewmeta.ConfigOverviewContributor;
-import com.inductiveautomation.ignition.gateway.web.pages.status.overviewmeta.OverviewContributor;
 import com.inductiveautomation.ignition.gateway.web.pages.status.StatusCategories;
 
-
-import org.apache.wicket.markup.html.WebMarkupContainer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import simpleorm.dataset.SQuery;
-
-import static com.bwdesigngroup.neo4j.gateway.web.Neo4JExtensionPage.CONFIG_CATEGORY;
-import static com.bwdesigngroup.neo4j.gateway.web.Neo4JExtensionPage.CONFIG_ENTRY;
 
 /**
  * Class which is instantiated by the Ignition platform when the module is loaded in the gateway scope.
@@ -80,6 +71,7 @@ public class Neo4JDriverGatewayHook extends AbstractGatewayModuleHook implements
 	 * Neo4JStatusRoutes.java, and the model and view will be in our javascript folder. The status panel is optional
 	 * Only add if your module will provide meaningful info.
 	 */
+
 	private static final INamedTab NEO_STATUS_PAGE = new AbstractNamedTab(
 			"neo4j",
 			StatusCategories.CONNECTIONS,
@@ -133,13 +125,18 @@ public class Neo4JDriverGatewayHook extends AbstractGatewayModuleHook implements
 	//     return Optional.of(overviewContributor);
 	// }
 
+
+	/**
+	 * This is the main entry point for the module. It is called when the module is loaded by the Ignition platform.
+	 * @param gatewayContext The gateway context.
+	 */
 	@Override
 	public void setup(GatewayContext gatewayContext) {
 		this.context = gatewayContext;
 		INSTANCE = this;
 
-		// Register GatewayHook.properties by registering the GatewayHook.class with BundleUtils
-		BundleUtil.get().addBundle("Neo4J", getClass(), "Neo4J");
+		// Register Neo4JDriverGatewayHook.properties by registering the Neo4JDriverGatewayHook.class with BundleUtils
+		BundleUtil.get().addBundle("Neo4J", getClass().getClassLoader(), getClass().getName().replace('.', '/'));
 
 		//Verify tables for persistent records if necessary
 		verifySchema(context);
@@ -147,11 +144,29 @@ public class Neo4JDriverGatewayHook extends AbstractGatewayModuleHook implements
 		// listen for updates to the settings record...
 		DatabaseRecord.META.addRecordListener(new IRecordListener<DatabaseRecord>() {
 
+			/* 
+			 * This method is called when a record is updated or added.
+			 */
 			private void updateConnector(DatabaseRecord SettingsRecord) {
-				RemoteDatabaseRecord remoteRecord = getDatabaseRecord(SettingsRecord);
-				DatabaseConnector dbConnector = new DatabaseConnector(SettingsRecord, remoteRecord);
-				CONNECTORS.put(SettingsRecord.getName(), dbConnector);
-				context.getScheduledExecutorService().scheduleAtFixedRate(new DatabaseConnectorStatus(context, SettingsRecord.getId()), 2, SettingsRecord.getValidationTimeout(), TimeUnit.MILLISECONDS);
+				try {
+					// If the SettingsRecord is disabled then remove the connector from the map.
+					if (!SettingsRecord.getEnabled()) {
+						CONNECTORS.remove(SettingsRecord.getName());
+						return;
+					}
+
+					// If the connector is already in the map then remove it.
+					if (CONNECTORS.containsKey(SettingsRecord.getName())) {
+						CONNECTORS.remove(SettingsRecord.getName());
+					}
+
+					// Create a new connector and add it to the map.
+					RemoteDatabaseRecord remoteRecord = getDatabaseRecord(SettingsRecord);
+					DatabaseConnector dbConnector = new DatabaseConnector(SettingsRecord, remoteRecord);
+					CONNECTORS.put(SettingsRecord.getName(), dbConnector);
+				} catch (Exception e) {
+					logger.error("Error updating connector for record: " + SettingsRecord.getName(), e);
+				}
 			}
 
 			@Override
@@ -166,10 +181,15 @@ public class Neo4JDriverGatewayHook extends AbstractGatewayModuleHook implements
 
 			@Override
 			public void recordDeleted(KeyValue keyValue) {
+				// TODO: remove connector from map
 				return;
 			}
 		});
 
+	}
+
+	public static PersistenceInterface getPersistenceInterface() {
+		return Neo4JDriverGatewayHook.context.getPersistenceInterface();
 	}
 
 	private void verifySchema(GatewayContext context) {
@@ -181,27 +201,34 @@ public class Neo4JDriverGatewayHook extends AbstractGatewayModuleHook implements
 	}
 
 	private RemoteDatabaseRecord getDatabaseRecord(DatabaseRecord SettingsRecord) {
-		return context.getPersistenceInterface().find(RemoteDatabaseRecord.META, SettingsRecord.getId());
+		return Neo4JDriverGatewayHook.getPersistenceInterface().find(RemoteDatabaseRecord.META, SettingsRecord.getId());
 	}
 
 	@Override
 	public void startup(LicenseState licenseState) {
-		List<DatabaseRecord> baseRecords = context.getPersistenceInterface().query(new SQuery<>(DatabaseRecord.META));
-		for (DatabaseRecord SettingsRecord : baseRecords) {
-			RemoteDatabaseRecord remoteRecord = getDatabaseRecord(SettingsRecord);
-			try {                
-				DatabaseConnector dbConnector = new DatabaseConnector(SettingsRecord, remoteRecord);
-				CONNECTORS.put(SettingsRecord.getName(), dbConnector);
-				// Instantiate the executorService that will update the database statuse
-				context.getScheduledExecutorService().scheduleAtFixedRate(new DatabaseConnectorStatus(context, SettingsRecord.getId()), 2, SettingsRecord.getValidationTimeout(), TimeUnit.MILLISECONDS);
-			} catch ( Exception e ) { 
-				logger.error("Unable to instantiate connection '" + SettingsRecord.getName() + "': " + e.getMessage());
-			}
-		}       
+		logger.info("Starting up Neo4J Driver Module");
+		try {
+			List<DatabaseRecord> baseRecords = Neo4JDriverGatewayHook.getPersistenceInterface().query(new SQuery<>(DatabaseRecord.META));
+			for (DatabaseRecord SettingsRecord : baseRecords) {
+				RemoteDatabaseRecord remoteRecord = getDatabaseRecord(SettingsRecord);
+				try {                
+					DatabaseConnector dbConnector = new DatabaseConnector(SettingsRecord, remoteRecord);
+					CONNECTORS.put(SettingsRecord.getName(), dbConnector);
+				} catch ( Exception e ) { 
+					logger.error("Unable to instantiate connection '" + SettingsRecord.getName() + "': " + e.getMessage());
+				}
+			}     
+		} catch (Exception e) {
+			logger.error("Error loading Neo4J Driver Module", e);
+		}  
 	}
 
 	public static DatabaseConnector getConnector(String connectorName) {
 		return Neo4JDriverGatewayHook.CONNECTORS.getOrDefault(connectorName, null);
+	}
+
+	public static List<DatabaseRecord> getDatabaseRecords() {
+		return Neo4JDriverGatewayHook.getPersistenceInterface().query(new SQuery<>(DatabaseRecord.META));
 	}
 
 	@Override

@@ -9,13 +9,13 @@ package com.bwdesigngroup.neo4j.gateway.web;
 import java.util.Collections;
 import java.util.List;
 
+import com.bwdesigngroup.neo4j.gateway.Neo4JDriverGatewayHook;
 import com.bwdesigngroup.neo4j.gateway.records.DatabaseRecord;
-
-import com.inductiveautomation.ignition.gateway.localdb.persistence.PersistenceSession;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 import com.inductiveautomation.ignition.gateway.web.pages.status.overviewmeta.InfoLine;
 import com.inductiveautomation.ignition.gateway.web.pages.status.overviewmeta.OverviewContributor;
 import com.inductiveautomation.ignition.gateway.web.pages.status.overviewmeta.SystemsEntry;
+
 import simpleorm.dataset.SQuery;
 
 /**
@@ -28,16 +28,11 @@ public class Neo4JOverviewContributor implements OverviewContributor {
     public Iterable<SystemsEntry> getSystemsEntries(GatewayContext context) {
 
         int connectionCount = 0;
-        PersistenceSession session = context.getPersistenceInterface().getSession();
-        try {
-            SQuery<DatabaseRecord> query = new SQuery<>(DatabaseRecord.META);
-            List<DatabaseRecord> connectionList = session.query(query);
-            if (connectionList != null){
-                connectionCount = connectionList.size();
-            }
-        } finally {
-            session.close();
-        }
+        List<DatabaseRecord> connectionList = Neo4JDriverGatewayHook.getPersistenceInterface().query( new SQuery<>(DatabaseRecord.META));
+
+        if (connectionList != null){
+			connectionCount = connectionList.size();
+		}
 
         SystemsEntry connections = new SystemsEntry(
                 "Graphs",

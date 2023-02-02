@@ -4,17 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.bwdesigngroup.neo4j.gateway.components.DatabaseConnector;
-import com.bwdesigngroup.neo4j.common.projectresources.Neo4JProperties;
-import com.bwdesigngroup.neo4j.common.scripting.ScriptModule;
-
-import com.inductiveautomation.ignition.common.project.ProjectInvalidException;
-import com.inductiveautomation.ignition.common.script.builtin.PyArgumentMap;
-
 import org.jetbrains.annotations.Nullable;
 import org.python.core.PyObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.bwdesigngroup.neo4j.common.projectresources.Neo4JProperties;
+import com.bwdesigngroup.neo4j.common.scripting.ScriptModule;
+import com.bwdesigngroup.neo4j.gateway.components.DatabaseConnector;
+import com.inductiveautomation.ignition.common.project.ProjectInvalidException;
+import com.inductiveautomation.ignition.common.script.builtin.PyArgumentMap;
 
 
 public class GatewayScriptModule extends ScriptModule {
