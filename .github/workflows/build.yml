@@ -36,5 +36,5 @@ jobs:
       uses: Shopify/upload-to-release@v1.0.1
       with:
         name: Neo4J-Driver.modl
-        path: build/Neo4J-Driver.modl
+        path: ./build/Neo4J-Driver.modl
         repo-token: ${{ secrets.GITHUB_TOKEN }}
