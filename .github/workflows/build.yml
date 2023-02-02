@@ -30,7 +30,7 @@ jobs:
     - 
       name: Build Module
       run: |
-        ./gradlew build && ./gradlew signModule --keystoreFile=release.keystore --keystorePassword="${{ secrets.KEYSTORE_PASSWORD }}"  --certFile=cert.crt --certPassword="${{ secrets.CERT_PASSWORD }}" --certAlias="${{ secrets.CERT_ALIAS }}"
+        ./gradlew build signModule --keystoreFile=release.keystore --keystorePassword="${{ secrets.KEYSTORE_PASSWORD }}"  --certFile=cert.crt --certPassword="${{ secrets.CERT_PASSWORD }}" --certAlias="${{ secrets.CERT_ALIAS }}"
     - 
       name: Checking Build Output
       run: |
