@@ -29,7 +29,7 @@ jobs:
     - 
       name: Build Module
       run: |
-        ./gradlew build --keystoreFile=release.keystore --keystorePassword="${{ secrets.KEYSTORE_PASSWORD }}"  --certFile=cert.crt --certPassword="${{ secrets.CERT_PASSWORD }}" --certAlias="${{ secrets.CERT_ALIAS }}";
+        ./gradlew build --keystoreFile=release.keystore --keystorePassword="${{ secrets.KEYSTORE_PASSWORD }}"  --certFile=cert.crt --certPassword="${{ secrets.CERT_PASSWORD }}" --certAlias="${{ secrets.CERT_ALIAS }}"
     - 
       name: Upload to Release Action
       uses: Shopify/upload-to-release@v1.0.1
