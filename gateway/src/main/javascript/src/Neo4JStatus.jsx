@@ -21,7 +21,7 @@ const BLANK_STATE = {
 };
 
 function ConnectionStatusLabel({ connection }) {
-	if (connection.status != "Valid") {
+	if (connection.exception) {
 		return <UserFriendlyError link={connection.status}
 								  exception={connection.exception}/>;
 	}

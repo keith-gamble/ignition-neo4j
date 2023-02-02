@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bwdesigngroup.neo4j.client.Neo4JClientScriptModule;
+import com.bwdesigngroup.neo4j.common.Neo4JDriverModule;
 import com.bwdesigngroup.neo4j.common.scripting.ScriptingFunctions;
 import com.bwdesigngroup.neo4j.designer.components.EditorCategory;
 import com.bwdesigngroup.neo4j.designer.editors.GeneralPropertyEditor;
@@ -24,7 +25,7 @@ public class Neo4JDriverDesignerHook extends AbstractDesignerModuleHook {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
     private static final Neo4JClientScriptModule scriptModule = new Neo4JClientScriptModule();
-    private static final ScriptingFunctions rpc = ModuleRPCFactory.create("com.bwdesigngroup.neo4j.neo4j-driver", ScriptingFunctions.class);
+    private static final ScriptingFunctions rpc = ModuleRPCFactory.create(Neo4JDriverModule.MODULE_ID, ScriptingFunctions.class);
     private DesignerContext context;
 
     @Override

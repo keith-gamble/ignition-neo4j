@@ -35,13 +35,14 @@ import com.inductiveautomation.ignition.common.gson.Gson;
 
 public class DatabaseConnector implements AutoCloseable
 {
-    private final Driver driver;
+    private Driver driver;
     private int slowQueryThreshold;
     private int maxConnectionPoolSize;
     private DatabaseRecord SettingsRecord;
     private RemoteDatabaseRecord DatabaseRecord;
     private String Database;
     private SessionConfig sessionConfig;
+	public Boolean Enabled = false;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -53,12 +54,10 @@ public class DatabaseConnector implements AutoCloseable
 			this.Database = settingsRecord.getDatabase();
 			this.slowQueryThreshold = settingsRecord.getSlowQueryThreshold();
 			this.maxConnectionPoolSize = settingsRecord.getMaxConnectionPoolSize();
+			this.Enabled = this.SettingsRecord.getEnabled();
 
-
-			if (!this.SettingsRecord.getEnabled()) {
-				logger.info("DatabaseConnector is disabled for " + this.SettingsRecord.getName());
-				
-				throw new RuntimeException("DatabaseConnector is disabled for " + this.SettingsRecord.getName());
+			if (this.Enabled == false) {
+				return;
 			}
 
 			Builder configBuilder = SessionConfig.builder();
