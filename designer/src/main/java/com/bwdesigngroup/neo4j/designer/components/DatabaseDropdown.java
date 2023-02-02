@@ -8,11 +8,7 @@ package com.bwdesigngroup.neo4j.designer.components;
 
 import java.util.List;
 
-import javax.swing.DefaultComboBoxModel;
-
 import com.bwdesigngroup.neo4j.designer.Neo4JDriverDesignerHook;
-import com.bwdesigngroup.neo4j.common.scripting.ScriptingFunctions;
-import com.inductiveautomation.ignition.client.gateway_interface.ModuleRPCFactory;
 import com.inductiveautomation.ignition.client.util.gui.AbstractProfileOptionDropdown;
 import com.inductiveautomation.ignition.common.BundleUtil;
 

@@ -2,11 +2,13 @@ package com.bwdesigngroup.neo4j.designer;
 
 import java.util.List;
 
-import com.bwdesigngroup.neo4j.designer.components.EditorCategory;
-import com.bwdesigngroup.neo4j.designer.editors.GeneralPropertyEditor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.bwdesigngroup.neo4j.client.Neo4JClientScriptModule;
 import com.bwdesigngroup.neo4j.common.scripting.ScriptingFunctions;
-
+import com.bwdesigngroup.neo4j.designer.components.EditorCategory;
+import com.bwdesigngroup.neo4j.designer.editors.GeneralPropertyEditor;
 import com.inductiveautomation.ignition.client.gateway_interface.ModuleRPCFactory;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
@@ -14,9 +16,6 @@ import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.script.hints.PropertiesFileDocProvider;
 import com.inductiveautomation.ignition.designer.model.AbstractDesignerModuleHook;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This is the Designer-scope module hook.  The minimal implementation contains a startup method.
@@ -30,6 +29,7 @@ public class Neo4JDriverDesignerHook extends AbstractDesignerModuleHook {
 
     @Override
     public void startup(DesignerContext context, LicenseState activationState) {
+		logger.trace("Neo4JDriverDesignerHook startup");
         this.context = context;
         BundleUtil.get().addBundle("GeneralPropertyEditor", GeneralPropertyEditor.class, "GeneralPropertyEditor");
         init();
