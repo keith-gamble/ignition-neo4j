@@ -1,6 +1,5 @@
 var webpack = require('webpack');
 var path = require('path');
-// var FailPlugin = require("../../../../../../Platform/gateway-api/src/main/javascript/ia-webpack-plugins/PerrysCheesyWebpackFailPlugin");
 
 var outputFile = 'neo4jstatus.js';
 
@@ -17,24 +16,23 @@ var config = {
     libraryTarget: 'var'
   },
   resolve: {
-    modulesDirectories: ['node_modules']
+    modules: ['node_modules']
   },
   module: {
-    loaders: [
+    rules: [
       {
         test: /(\.jsx|\.js)$/,
-        loader: 'babel-loader',
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ["@babel/preset-env", "@babel/preset-react"]
+          }
+        },
         exclude: /(node_modules|bower_components)/,
-        query: {
-          presets: ['es2015', 'react']
-        }
       }
     ]
   },
-  plugins: [
-      // new webpack.optimize.UglifyJsPlugin({minimize:true})
-      // new FailPlugin(),
-  ],
+  plugins: [],
   externals: [
     {react: 'React'},
     {'react-dom': 'ReactDOM'},
@@ -42,7 +40,6 @@ var config = {
     {'ignition-lib': 'IgnitionLib'},
     {'moment': 'moment'},
     {'numeral': 'numeral'}
-      // moment and numeral are helpful for formatting time and numbers. Remove these lines if you don't need them.
   ]
 };
 

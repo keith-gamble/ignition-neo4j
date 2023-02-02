@@ -263,13 +263,7 @@ public class DatabaseConnector implements AutoCloseable
     }
 
     public boolean isConnected() {
-        try {
-            driver.verifyConnectivity();
-        } catch (Exception e){
-            logger.error("Database Status faulted: " + e.getMessage());
-            return false;
-        }
-
+		driver.verifyConnectivity();
         return true;
     }
 
