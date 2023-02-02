@@ -9,6 +9,7 @@ public class RemoteDatabaseInstance extends Extendable {
     private final String url;
     private final String username;
     private final String password;
+	private final Exception exception;
 
     public RemoteDatabaseInstance(DatabaseRecord baseRecord, RemoteDatabaseRecord childRecord) {
         this.name = baseRecord.getString(DatabaseRecord.NAME);
@@ -16,5 +17,6 @@ public class RemoteDatabaseInstance extends Extendable {
         this.url = childRecord.getString(RemoteDatabaseRecord.CONNECTURL);
         this.username = childRecord.getString(RemoteDatabaseRecord.USERNAME);
         this.password = childRecord.getString(RemoteDatabaseRecord.PASSWORD);
+		this.exception = baseRecord.exception;
     }
 }

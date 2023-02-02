@@ -3,6 +3,8 @@ package com.bwdesigngroup.neo4j.gateway.web;
 
 import static com.inductiveautomation.ignition.gateway.dataroutes.RouteGroup.TYPE_JSON;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -48,11 +50,26 @@ public class Neo4JStatusRoutes {
 				if (record != null) {
 					JSONObject connectionJson = new JSONObject();
 					jsonArray.put(connectionJson);
-					connectionJson.put("ConnectionName", record.getName());
-					connectionJson.put("ConnectionType", record.getType());
-					connectionJson.put("ConnectionStatus", record.getStatus());
-					connectionJson.put("MaxConnectionPoolSize", record.getMaxConnectionPoolSize());
-					connectionJson.put("ActiveConnections", record.getActiveConnections());
+					connectionJson.put("name", record.getName());
+					connectionJson.put("type", record.getType());
+					connectionJson.put("status", record.getStatus());
+					connectionJson.put("maxConnectionPoolSize", record.getMaxConnectionPoolSize());
+					connectionJson.put("activeConnections", record.getActiveConnections());
+					
+					if (record.exception != null) {
+
+						JSONObject exception = new JSONObject();
+						exception.put("message", record.exception.getMessage());
+
+						// Convert the stacktrace to a newline separated string
+						StringWriter stringWriter = new StringWriter();
+						PrintWriter printWriter = new PrintWriter(stringWriter);
+						record.exception.printStackTrace(printWriter);
+						String sStackTrace = stringWriter.toString();
+						exception.put("stacktrace", sStackTrace);
+
+						connectionJson.put("exception", exception);
+					}
 				}
 			}
 		}
