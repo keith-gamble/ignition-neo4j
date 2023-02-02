@@ -32,10 +32,6 @@ jobs:
       run: |
         ./gradlew build signModule --keystoreFile=release.keystore --keystorePassword="${{ secrets.KEYSTORE_PASSWORD }}"  --certFile=cert.crt --certPassword="${{ secrets.CERT_PASSWORD }}" --certAlias="${{ secrets.CERT_ALIAS }}"
     - 
-      name: Checking Build Output
-      run: |
-        ls -la ./build
-    - 
       name: Upload to Release Action
       uses: Shopify/upload-to-release@v1.0.1
       with:
