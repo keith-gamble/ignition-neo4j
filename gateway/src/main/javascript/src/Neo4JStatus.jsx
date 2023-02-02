@@ -46,7 +46,7 @@ class ConnectOverview extends Component {
                 { header: 'Connection Name', weight: 1 },
                 { header: 'Connection Type', weight: 1 },
                 { header: 'Connections', weight: 1 },
-                { header: 'Connection Status', weight: 1 }
+                { header: 'Connection Status', weight: 1 },
             ];
             const connectionCount = connections.count;
             var activeConnections = 0;
