@@ -1,5 +1,6 @@
 # Gradle build outputs
 build/
+bin/
 
 # Gradle Wrapper
 gradle/wrapper/gradle-wrapper.jar
@@ -12,3 +13,6 @@ gradle/wrapper/gradle-wrapper.jar
 
 # Gradle Daemon logs
 .gradle-daemon/
+
+# MacOS Files
+.DS_Store
