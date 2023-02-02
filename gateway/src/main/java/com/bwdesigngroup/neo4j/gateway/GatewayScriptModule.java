@@ -58,8 +58,15 @@ public class GatewayScriptModule extends ScriptModule {
     @Override
     public void updateQueryImpl(PyObject[] pyArgs, String[] keywords) {
         PyArgumentMap args = PyArgumentMap.interpretPyArgs(pyArgs, keywords, ScriptModule.class, "updateQuery"); 
-
-        DatabaseConnector connector = getDatabaseConnector(args.getStringArg("database", getDefaultConnector(args.getStringArg("project", null))));
+		String connectorName = args.getStringArg("database", getDefaultConnector(args.getStringArg("project", null)));
+				
+        DatabaseConnector connector = getDatabaseConnector(connectorName);
+		
+		if (connector.Enabled == false) {
+			logger.error("Database connector is disabled");
+			throw new RuntimeException("Database connector '" + connectorName + "' is disabled");
+		}
+		
         connector.updateQuery(args.getStringArg("query"), (Map<String,Object>) args.getArg("params"));
         return;
     }
@@ -67,8 +74,15 @@ public class GatewayScriptModule extends ScriptModule {
     @Override
     public Object selectQueryImpl(PyObject[] pyArgs, String[] keywords) {
         PyArgumentMap args = PyArgumentMap.interpretPyArgs(pyArgs, keywords, ScriptModule.class, "updateQuery"); 
-        
-        DatabaseConnector connector = getDatabaseConnector(args.getStringArg("database", getDefaultConnector(args.getStringArg("project", null))));
+		String connectorName = args.getStringArg("database", getDefaultConnector(args.getStringArg("project", null)));
+				
+        DatabaseConnector connector = getDatabaseConnector(connectorName);
+		
+		if (connector.Enabled == false) {
+			logger.error("Database connector is disabled");
+			throw new RuntimeException("Database connector '" + connectorName + "' is disabled");
+		}
+
         return connector.selectQuery(args.getStringArg("query"), (Map<String,Object>) args.getArg("params"));
 
     }

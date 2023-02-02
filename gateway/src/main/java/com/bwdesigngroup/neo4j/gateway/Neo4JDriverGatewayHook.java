@@ -149,12 +149,6 @@ public class Neo4JDriverGatewayHook extends AbstractGatewayModuleHook implements
 			 */
 			private void updateConnector(DatabaseRecord SettingsRecord) {
 				try {
-					// If the SettingsRecord is disabled then remove the connector from the map.
-					if (!SettingsRecord.getEnabled()) {
-						CONNECTORS.remove(SettingsRecord.getName());
-						return;
-					}
-
 					// If the connector is already in the map then remove it.
 					if (CONNECTORS.containsKey(SettingsRecord.getName())) {
 						CONNECTORS.remove(SettingsRecord.getName());

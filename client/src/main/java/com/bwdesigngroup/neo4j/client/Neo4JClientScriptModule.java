@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.python.core.PyObject;
 
+import com.bwdesigngroup.neo4j.common.Neo4JDriverModule;
 import com.bwdesigngroup.neo4j.common.scripting.ScriptModule;
 import com.bwdesigngroup.neo4j.common.scripting.ScriptingFunctions;
 import com.inductiveautomation.ignition.client.gateway_interface.ModuleRPCFactory;
@@ -15,7 +16,7 @@ public class Neo4JClientScriptModule extends ScriptModule {
 
     public Neo4JClientScriptModule() {
         rpc = ModuleRPCFactory.create(
-            "com.bwdesigngroup.neo4j.neo4j-driver",
+            Neo4JDriverModule.MODULE_ID,
             ScriptingFunctions.class
         );
     }

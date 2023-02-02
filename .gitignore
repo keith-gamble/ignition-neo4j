@@ -20,3 +20,5 @@ gradle/wrapper/gradle-wrapper.jar
 # NPM files
 node_modules/
 **/package-lock.json
+
+gradle.properties
