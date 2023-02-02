@@ -1,16 +1,10 @@
 plugins {
-	id "java"
     id "java-library"
 }
 
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
 
-repositories {
-	mavenCentral()
-}
-
 dependencies {
 	compileOnly("com.inductiveautomation.ignitionsdk:ignition-common:${sdk_version}")
-	implementation("org.neo4j.driver:neo4j-java-driver:4.2.3")
 }
