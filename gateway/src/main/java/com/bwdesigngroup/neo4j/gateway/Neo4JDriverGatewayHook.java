@@ -132,7 +132,7 @@ public class Neo4JDriverGatewayHook extends AbstractGatewayModuleHook implements
 	 */
 	@Override
 	public void setup(GatewayContext gatewayContext) {
-		this.context = gatewayContext;
+		Neo4JDriverGatewayHook.context = gatewayContext;
 		INSTANCE = this;
 
 		// Register Neo4JDriverGatewayHook.properties by registering the Neo4JDriverGatewayHook.class with BundleUtils
@@ -175,8 +175,10 @@ public class Neo4JDriverGatewayHook extends AbstractGatewayModuleHook implements
 
 			@Override
 			public void recordDeleted(KeyValue keyValue) {
-				// TODO: remove connector from map
-				return;
+				// If the connector is already in the map then remove it.
+				if (CONNECTORS.containsKey(keyValue.toString())) {
+					CONNECTORS.remove(keyValue.toString());
+				}
 			}
 		});
 
@@ -289,11 +291,10 @@ public class Neo4JDriverGatewayHook extends AbstractGatewayModuleHook implements
 		return true;
 	}
 
+
 	/**
 	 * The following methods are used by the status panel. Only add these if you are providing a status panel.
 	 */
-
-
 	// getMountPathAlias() allows us to use a shorter mount path. Use caution, because we don't want a conflict with
 	// other modules by other authors.
 	@Override
@@ -313,6 +314,7 @@ public class Neo4JDriverGatewayHook extends AbstractGatewayModuleHook implements
 		new Neo4JStatusRoutes(context, routes).mountRoutes();
 	}
 
+	// Define your status panels here
 	@Override
 	public List<? extends INamedTab> getStatusPanels() {
 		return Collections.singletonList(NEO_STATUS_PAGE);
