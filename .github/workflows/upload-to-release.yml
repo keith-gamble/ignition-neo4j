@@ -41,15 +41,12 @@ jobs:
       id: latest-release
       run: |
         latest_release_id=$(curl -H "Authorization: token ${{ env.GITHUB_TOKEN }}" --silent "https://api.github.com/repos/${{ github.repository }}/releases/latest" | jq -r '.id')
-        echo "::set-env name=LATEST_RELEASE_ID::$latest_release_id"
+        echo "::set-output name=id::$latest_release_id"
 
-    - name: Create release asset
-      uses: actions/create-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload to Release Action
+      uses: softprops/action-gh-release@v1
       with:
-        release_id: ${{ env.LATEST_RELEASE_ID }}
-        asset_path: ./build/Neo4J-Driver.modl
-        asset_name: Neo4J-Driver.modl
-        asset_label: "Ignition Module"
-        asset_content_type: application/octet-stream
+        files: ./build/Neo4J-Driver.modl
+        tag: ${{ steps.latest-release.outputs.id }}
+        name: Neo4J-Driver.modl
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
