@@ -8,8 +8,8 @@ package com.bwdesigngroup.neo4j.designer.editors;
 
 import javax.swing.JLabel;
 
-import com.bwdesigngroup.neo4j.designer.components.DatabaseDropdown;
 import com.bwdesigngroup.neo4j.common.projectresources.Neo4JProperties;
+import com.bwdesigngroup.neo4j.designer.components.DatabaseDropdown;
 import com.inductiveautomation.ignition.client.util.gui.HeaderLabel;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.project.resource.ResourceType;
