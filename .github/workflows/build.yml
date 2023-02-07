@@ -31,8 +31,8 @@ jobs:
         ./gradlew build signModule --keystoreFile=release.keystore --keystorePassword="${{ secrets.KEYSTORE_PASSWORD }}"  --certFile=cert.crt --certPassword="${{ secrets.CERT_PASSWORD }}" --certAlias="${{ secrets.CERT_ALIAS }}"
     - 
       name: Upload to Release Action
-      uses: Shopify/upload-to-release@v1.0.1
+      uses: keith-gamble/upload-to-latest-release@master
       with:
-        name: Neo4J-Driver.modl
-        path: ./build/Neo4J-Driver.modl
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        name: 'Neo4J-Driver.modl'
+        path: 'build/Neo4J-Driver.modl'
+        token: ${{ secrets.GITHUB_TOKEN }}
