@@ -1,0 +1,22 @@
+[versions]
+ignition = "8.1.44"
+neo4j = "5.14.0"
+slf4j = "1.7.36"
+gson = "2.10.1"
+
+[libraries]
+# Ignition SDK dependencies
+ignition-common = { module = "com.inductiveautomation.ignitionsdk:ignition-common", version.ref = "ignition" }
+ignition-gateway-api = { module = "com.inductiveautomation.ignitionsdk:gateway-api", version.ref = "ignition" }
+ignition-client-api = { module = "com.inductiveautomation.ignitionsdk:client-api", version.ref = "ignition" }
+ignition-designer-api = { module = "com.inductiveautomation.ignitionsdk:designer-api", version.ref = "ignition" }
+ignition-vision-client-api = { module = "com.inductiveautomation.ignitionsdk:vision-client-api", version.ref = "ignition" }
+ignition-driver-api = { module = "com.inductiveautomation.ignitionsdk:driver-api", version.ref = "ignition" }
+
+# Third-party dependencies
+neo4j-java-driver = { module = "org.neo4j.driver:neo4j-java-driver", version.ref = "neo4j" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+
+[plugins]
+ignition-module = { id = "io.ia.sdk.modl", version = "0.3.0" }

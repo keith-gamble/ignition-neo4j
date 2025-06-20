@@ -1,0 +1,69 @@
+services:
+  # Neo4J Database Service
+  neo4j:
+    image: neo4j:5.14.0-community
+    container_name: neo4j
+    environment:
+      - NEO4J_AUTH=neo4j/password123
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+      - NEO4J_dbms_security_procedures_allowlist=apoc.*
+    labels:
+      traefik.enable: true
+      traefik.hostname: neo4j
+      traefik.http.services.neo4j.loadbalancer.server.port: 7474
+      traefik.tcp.routers.neo4j-bolt.entrypoints: "neo4j"
+      traefik.tcp.routers.neo4j-bolt.tls: "true"
+      traefik.tcp.routers.neo4j-bolt.rule: "HostSNI(`neo4j.localtest.me`)"
+      traefik.tcp.routers.neo4j-bolt.service: "neo4j-bolt-svc"
+      traefik.tcp.services.neo4j-bolt-svc.loadbalancer.server.port: 7687
+    ports:
+      - "7474:7474"   # HTTP
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - neo4j_import:/var/lib/neo4j/import
+      - neo4j_plugins:/plugins
+    networks:
+      - default
+      - proxy
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p password123 'RETURN 1'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Ignition Gateway Service
+  ignition:
+    image: bwdesigngroup/ignition-docker:8.1.47
+    platform: linux/amd64
+    environment:
+      GATEWAY_MODULES_ENABLED: perspective
+      DEVELOPER_MODE: "Y"
+    volumes:
+      - ../build/Neo4J-Driver.modl:/modules/Neo4J-Driver.modl
+      - ./backups/gateway.gwbk:/restore.gwbk
+    labels:
+      traefik.enable: "true"
+      traefik.hostname: "neo4j-dev"
+    command: >
+      -n neo4j-dev
+      -r /restore.gwbk
+    
+    networks:
+      - default
+      - proxy
+
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
+  neo4j_import:
+  neo4j_plugins:
+
+networks:
+  default:
+  proxy:
+    external: true
+    name: proxy
