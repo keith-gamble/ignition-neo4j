@@ -1,6 +1,7 @@
 # Gradle build outputs
 build/
 bin/
+dist/
 
 # Gradle Wrapper
 gradle/wrapper/gradle-wrapper.jar
@@ -19,7 +20,6 @@ gradle/wrapper/gradle-wrapper.jar
 
 # NPM files
 node_modules/
-**/package-lock.json
 
 gradle.properties
 
