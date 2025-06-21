@@ -9,7 +9,31 @@ public class RemoteDatabaseInstance extends Extendable {
     private final String url;
     private final String username;
     private final String password;
-	private final Exception exception;
+    private final Exception exception;
+
+    public String getName() {
+        return name;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public Exception getException() {
+        return exception;
+    }
 
     public RemoteDatabaseInstance(DatabaseRecord baseRecord, RemoteDatabaseRecord childRecord) {
         this.name = baseRecord.getString(DatabaseRecord.NAME);

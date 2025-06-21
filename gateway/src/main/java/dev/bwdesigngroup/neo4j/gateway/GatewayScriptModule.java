@@ -67,23 +67,38 @@ public class GatewayScriptModule extends ScriptModule {
 			throw new RuntimeException("Database connector '" + connectorName + "' is disabled");
 		}
 		
-        connector.updateQuery(args.getStringArg("query"), (Map<String,Object>) args.getArg("params"));
+        Object paramsObj = args.getArg("params");
+        Map<String, Object> params = null;
+        if (paramsObj instanceof Map) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> castedParams = (Map<String, Object>) paramsObj;
+            params = castedParams;
+        }
+        connector.updateQuery(args.getStringArg("query"), params);
         return;
     }
     
     @Override
     public Object selectQueryImpl(PyObject[] pyArgs, String[] keywords) {
         PyArgumentMap args = PyArgumentMap.interpretPyArgs(pyArgs, keywords, ScriptModule.class, "updateQuery"); 
-		String connectorName = args.getStringArg("database", getDefaultConnector(args.getStringArg("project", null)));
-				
+        String connectorName = args.getStringArg("database", getDefaultConnector(args.getStringArg("project", null)));
+                
         DatabaseConnector connector = getDatabaseConnector(connectorName);
-		
-		if (connector.Enabled == false) {
-			logger.error("Database connector is disabled");
-			throw new RuntimeException("Database connector '" + connectorName + "' is disabled");
-		}
+        
+        if (connector.Enabled == false) {
+            logger.error("Database connector is disabled");
+            throw new RuntimeException("Database connector '" + connectorName + "' is disabled");
+        }
 
-        return connector.selectQuery(args.getStringArg("query"), (Map<String,Object>) args.getArg("params"));
+        Object paramsObj = args.getArg("params");
+        Map<String, Object> params = null;
+        if (paramsObj instanceof Map) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> castedParams = (Map<String, Object>) paramsObj;
+            params = castedParams;
+        }
+
+        return connector.selectQuery(args.getStringArg("query"), params);
 
     }
 

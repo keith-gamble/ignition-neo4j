@@ -15,8 +15,6 @@ import org.json.JSONObject;
 
 import dev.bwdesigngroup.neo4j.gateway.Neo4JDriverGatewayHook;
 import dev.bwdesigngroup.neo4j.gateway.records.DatabaseRecord;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.dataroutes.RequestContext;
 import com.inductiveautomation.ignition.gateway.dataroutes.RouteGroup;
 import com.inductiveautomation.ignition.gateway.dataroutes.WicketAccessControl;
@@ -24,7 +22,6 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 public class Neo4JStatusRoutes {
 
-    private final LoggerEx log = LogUtil.getLogger(getClass().getSimpleName());
     private final RouteGroup routes;
 
     public Neo4JStatusRoutes(GatewayContext context, RouteGroup group) {

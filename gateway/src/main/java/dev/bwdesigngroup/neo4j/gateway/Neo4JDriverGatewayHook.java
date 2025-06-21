@@ -37,6 +37,7 @@ import com.inductiveautomation.ignition.gateway.model.AbstractGatewayModuleHook;
 import com.inductiveautomation.ignition.gateway.model.ExtensionPointManager;
 import com.inductiveautomation.ignition.gateway.model.ExtensionPointType;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
+import com.inductiveautomation.ignition.gateway.model.GatewaySystemProperties;
 import com.inductiveautomation.ignition.gateway.web.components.AbstractNamedTab;
 import com.inductiveautomation.ignition.gateway.web.models.ConfigCategory;
 import com.inductiveautomation.ignition.gateway.web.models.IConfigTab;
@@ -265,8 +266,12 @@ public class Neo4JDriverGatewayHook extends AbstractGatewayModuleHook implements
 		return properties;
 	}
 
-	public static String getDefaultScriptingProject() {
-		return context.getSystemProperties().getGatewayScriptingProject();
+	public static String getDefaultScriptingProject() throws IllegalStateException {
+		String value = context.getSystemPropertiesManager().getPropertyValue(GatewaySystemProperties.GatewayScriptingProject);
+		if (value == null) {
+			throw new IllegalStateException("Default scripting project not set in system properties.");
+		}
+		return value;
 	}
 
 

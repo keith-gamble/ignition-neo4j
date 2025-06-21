@@ -22,7 +22,6 @@ import org.neo4j.driver.Session;
 import org.neo4j.driver.SessionConfig;
 import org.neo4j.driver.SessionConfig.Builder;
 import org.neo4j.driver.Transaction;
-import org.neo4j.driver.TransactionWork;
 import org.neo4j.driver.summary.Notification;
 import org.neo4j.driver.summary.ResultSummary;
 import org.neo4j.driver.summary.SummaryCounters;
@@ -126,34 +125,28 @@ public class DatabaseConnector implements AutoCloseable
 
         try ( Session session = driver.session(sessionConfig) )
         {
-            session.readTransaction( new TransactionWork<Object>()
-                {
-                    @Override
-                    public Object execute( Transaction tx )
-                    {
-                        Result result;
-                        
-                        if (params == null) {
-                            result = tx.run(query);
-                        } else {
-                            Map<String, Object> validatedParams = validateParameterMap(params);
-                            result = tx.run(query, validatedParams);
-                        }
-                        
-                        while ( result.hasNext() ) {
-                            Record record = result.next();
-                            resultList.add(record.asMap());
-                        }
-                        
-                        String summaryString = getResultSummaryString(result.consume(), query);
-                
-                        logger.debug(summaryString);
-                        System.out.println(summaryString);
+            session.executeRead(tx -> {
+                Result result;
 
-                        return resultList;
-                    }
-                } 
-            );
+                if (params == null) {
+                    result = tx.run(query);
+                } else {
+                    Map<String, Object> validatedParams = validateParameterMap(params);
+                    result = tx.run(query, validatedParams);
+                }
+
+                while (result.hasNext()) {
+                    Record record = result.next();
+                    resultList.add(record.asMap());
+                }
+
+                String summaryString = getResultSummaryString(result.consume(), query);
+
+                logger.debug(summaryString);
+                System.out.println(summaryString);
+
+                return resultList;
+            });
             return resultList;
         }
     }
@@ -221,8 +214,15 @@ public class DatabaseConnector implements AutoCloseable
             return ((BigInteger) value).longValue();
         } else if (value instanceof java.util.Date) {
             return ((java.util.Date) value).toInstant().atZone(ZoneId.systemDefault());
-        } else if (value instanceof Map) {
-            return validateParameterMap((Map<String, Object>) value);
+        } else if (value instanceof Map<?, ?>) {
+            Map<?, ?> rawMap = (Map<?, ?>) value;
+            Map<String, Object> stringObjectMap = new HashMap<>();
+            for (Map.Entry<?, ?> entry : rawMap.entrySet()) {
+                if (entry.getKey() instanceof String) {
+                    stringObjectMap.put((String) entry.getKey(), entry.getValue());
+                }
+            }
+            return validateParameterMap(stringObjectMap);
         } else if (value instanceof org.python.core.PyList) {
             List<Object> convertedArray = new ArrayList<Object>();
             for (Object item : (org.python.core.PyList) value) {
@@ -246,8 +246,9 @@ public class DatabaseConnector implements AutoCloseable
                     updatedParams.put(key,null);
                     continue;
                 }
-                if (value instanceof Map) {
-                    Map<String, Object> subMap = (Map<String, Object>)value;
+                if (value instanceof Map<?, ?>) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> subMap = (Map<String, Object>) value;
                     updatedParams.put(key, validateParameterMap(subMap));
                 } else {
                     updatedParams.put(key, convertValueType(value));

@@ -64,7 +64,7 @@ public class RemoteDatabaseRecord extends PersistentRecord {
     }
 
     public void setUsername(String username) {
-        setString(this.USERNAME, username);
+        setString(RemoteDatabaseRecord.USERNAME, username);
     }
 
     public String getUsername() {
@@ -72,7 +72,7 @@ public class RemoteDatabaseRecord extends PersistentRecord {
     }
 
     public void setPassword(String pass) {
-        setString(this.PASSWORD, pass);
+        setString(RemoteDatabaseRecord.PASSWORD, pass);
     }
 
     public String getPassword() {
