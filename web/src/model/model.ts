@@ -1,5 +1,5 @@
-import {combineReducers} from 'redux';
-import {fetchJson, checkStatus, JSCache} from 'ignition-lib';
+import { combineReducers } from 'redux';
+import { fetchJson, checkStatus, JSCache } from 'ignition-lib';
 
 const CONNECTIONS_LOAD = 'neo/CONNECTIONS_LOAD';
 const CONNECTIONS_ERR = 'neo/CONNECTIONS_ERR';
@@ -10,7 +10,7 @@ const VIEW_ALL = "neo/VIEW_ALL";
 const VIEW_CONNECTION = "neo/VIEW_CONNECTION";
 const FETCH_PERMISSIONS = "neo/FETCH_PERMISSIONS";
 
-function getConnections(state = null, action) {
+function getConnections(state = null, action: any) {
     if (action.type === CONNECTIONS_LOAD) {
         return action.connections;
     } else if (action.type === CONNECTIONS_ERR) {
@@ -19,7 +19,7 @@ function getConnections(state = null, action) {
     return state;
 }
 
-function getConnectionsError(state = null, action) {
+function getConnectionsError(state = null, action: any) {
     if (action.type === CONNECTIONS_ERR) {
         return action.reason;
     } else if (action.type === CONNECTIONS_LOAD) {
@@ -28,7 +28,7 @@ function getConnectionsError(state = null, action) {
     return state;
 }
 
-function getDetails(state = null, action) {
+function getDetails(state = null, action: any) {
     if (action.type === CONNECTIONS_DETAIL_LOAD) {
         return action.connection;
     } else if (action.type === CONNECTIONS_DETAIL_ERR) {
@@ -37,7 +37,7 @@ function getDetails(state = null, action) {
     return state;
 }
 
-function getDetailsError(state = null, action) {
+function getDetailsError(state = null, action: any) {
     if (action.type === CONNECTIONS_DETAIL_ERR) {
         return action.reason;
     } else if (action.type === CONNECTIONS_DETAIL_LOAD) {
@@ -46,7 +46,7 @@ function getDetailsError(state = null, action) {
     return state;
 }
 
-function connectionName(state = null, action) {
+function connectionName(state = null, action: any) {
     if (action.type === VIEW_CONNECTION) {
         return action.connection;
     } else if (action.type === VIEW_ALL) {
@@ -55,8 +55,7 @@ function connectionName(state = null, action) {
     return state;
 }
 
-
-function permissions(state = {'config': false}, action) {
+function permissions(state = { 'config': false }, action: any) {
     if (action.type === FETCH_PERMISSIONS) {
         return action.permissions;
     }
@@ -71,13 +70,14 @@ const reducer = combineReducers({
     getDetails,
     getDetailsError,
 });
+
 export default reducer;
 
 /*
  ACTION CREATORS
  */
-export function getConnectionsStatus(startNextPoll) {
-    return function (dispatch) {
+export function getConnectionsStatus(startNextPoll: () => boolean) {
+    return function (dispatch: any) {
         fetch(`/main/data/neo4j/status/connections`, {
             method: 'get',
             credentials: 'same-origin',
@@ -88,14 +88,13 @@ export function getConnectionsStatus(startNextPoll) {
             .then(checkStatus)
             .then(response => response.json())
             .then(json => {
-                if(startNextPoll()){
-                    dispatch({type: CONNECTIONS_LOAD, connections: json})
+                if (startNextPoll()) {
+                    dispatch({ type: CONNECTIONS_LOAD, connections: json })
                 }
-
             })
             .catch(reason => {
                 startNextPoll();
-                dispatch({type: CONNECTIONS_ERR, reason: reason.toString()});
+                dispatch({ type: CONNECTIONS_ERR, reason: reason.toString() });
             });
     }
 }

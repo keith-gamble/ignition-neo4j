@@ -15,6 +15,9 @@ dependencies {
     api(projects.common)
     api(projects.designer)
 
+    // Include the web project's built resources
+    modlImplementation(projects.web)
+
     // Bundle the Neo4J driver with the module
     bundledLibs(libs.neo4j.java.driver)
     implementation(libs.neo4j.java.driver)
@@ -33,4 +36,18 @@ tasks.jar {
     
     // Exclude signature files that can cause issues
     exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
+}
+
+// Copy web resources from the web project
+tasks.register<Copy>("copyWebResources") {
+    from(project(":web").layout.buildDirectory.dir("generated-resources/mounted")) {
+        include("**/*")
+    }
+    into("build/resources/main/mounted")
+    
+    dependsOn(":web:processResources")
+}
+
+tasks.named("processResources") {
+    dependsOn("copyWebResources")
 }

@@ -20,7 +20,8 @@ ignitionModule {
             ":client" to "C",
             ":common" to "GCD",
             ":designer" to "D",
-            ":gateway" to "G"
+            ":gateway" to "G",
+            ":web" to "G"  // Add web project
         )
     )
 
