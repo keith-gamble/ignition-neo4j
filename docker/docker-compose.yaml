@@ -50,6 +50,8 @@ services:
     command: >
       -n neo4j-dev
       -r /restore.gwbk
+      --
+      gateway.useProxyForwardedHeader=true
     
     networks:
       - default
