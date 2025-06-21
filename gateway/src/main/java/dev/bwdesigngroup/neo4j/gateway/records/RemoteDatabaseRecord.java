@@ -15,26 +15,33 @@ import com.inductiveautomation.ignition.gateway.web.components.editors.PasswordE
 import simpleorm.dataset.SFieldFlags;
 
 public class RemoteDatabaseRecord extends PersistentRecord {
-    
-    public static final RecordMeta<RemoteDatabaseRecord> META = new RecordMeta<>(RemoteDatabaseRecord.class, "neo4j_remoteDBMS");
 
-    public static final StringField CONNECTURL = new StringField(META, "ConnectUri", SFieldFlags.SMANDATORY).setDefault("bolt://localhost:7687");
+    public static final RecordMeta<RemoteDatabaseRecord> META = new RecordMeta<>(RemoteDatabaseRecord.class,
+            "neo4j_remoteDBMS");
+
+    public static final StringField CONNECTURL = new StringField(META, "ConnectUri", SFieldFlags.SMANDATORY)
+            .setDefault("bolt://localhost:7687");
     public static final StringField USERNAME = new StringField(META, "Username").setDefault("neo4j");
     public static final StringField PASSWORD = new StringField(META, "Password");
 
     public static final LongField PROFILE_ID = new LongField(META, "ProfileId", SFieldFlags.SPRIMARY_KEY);
-    public static final ReferenceField<DatabaseRecord> PROFILE =
-        new ReferenceField<>(META, DatabaseRecord.META, "Profile", PROFILE_ID);
+    public static final ReferenceField<DatabaseRecord> PROFILE = new ReferenceField<>(META, DatabaseRecord.META,
+            "Profile", PROFILE_ID);
 
     static {
+        // Register bundle like the working example
         BundleUtil.get().addBundle("RemoteDatabaseRecord", RemoteDatabaseRecord.class, "RemoteDatabaseRecord");
+
         PASSWORD.getFormMeta().setEditorSource(PasswordEditorSource.getSharedInstance());
         PROFILE.getFormMeta().setVisible(false);
         CONNECTURL.getFormMeta().setFieldDescriptionKey("RemoteDatabaseRecord.ConnectUri.Description");
+        USERNAME.getFormMeta().setFieldDescriptionKey("RemoteDatabaseRecord.Username.Description");
+        PASSWORD.getFormMeta().setFieldDescriptionKey("RemoteDatabaseRecord.Password.Description");
     }
 
     // Create the category for our connection info
-    static final Category ConnectionInfo = new Category("RemoteDatabaseRecord.Category.Connection", 2000).include(CONNECTURL, USERNAME, PASSWORD);
+    static final Category ConnectionInfo = new Category("RemoteDatabaseRecord.Category.Connection", 2000)
+            .include(CONNECTURL, USERNAME, PASSWORD);
 
     public static class RemoteDatabaseType extends DatabaseRecordType {
         public RemoteDatabaseType() {
@@ -47,8 +54,7 @@ public class RemoteDatabaseRecord extends PersistentRecord {
         }
 
         @Override
-        public
-        RemoteDatabaseInstance createNewInstance(GatewayContext context, DatabaseRecord baseRecord) {
+        public RemoteDatabaseInstance createNewInstance(GatewayContext context, DatabaseRecord baseRecord) {
             RemoteDatabaseRecord childRecord = findProfileSettingsRecord(context, baseRecord);
             return new RemoteDatabaseInstance(baseRecord, childRecord);
         }

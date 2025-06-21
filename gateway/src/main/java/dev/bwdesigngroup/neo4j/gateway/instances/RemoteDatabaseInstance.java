@@ -1,5 +1,7 @@
 package dev.bwdesigngroup.neo4j.gateway.instances;
 
+import dev.bwdesigngroup.neo4j.gateway.Neo4JDriverGatewayHook;
+import dev.bwdesigngroup.neo4j.gateway.components.Neo4JConnectionManager;
 import dev.bwdesigngroup.neo4j.gateway.records.DatabaseRecord;
 import dev.bwdesigngroup.neo4j.gateway.records.RemoteDatabaseRecord;
 
@@ -9,7 +11,6 @@ public class RemoteDatabaseInstance extends Extendable {
     private final String url;
     private final String username;
     private final String password;
-    private final Exception exception;
 
     public String getName() {
         return name;
@@ -31,8 +32,38 @@ public class RemoteDatabaseInstance extends Extendable {
         return password;
     }
 
-    public Exception getException() {
-        return exception;
+    /**
+     * Get exception information from the connection manager instead of the record
+     */
+    public String getException() {
+        try {
+            Neo4JConnectionManager.ConnectionPool connectionStatus = Neo4JDriverGatewayHook
+                    .getConnectionStatus(this.name);
+
+            if (connectionStatus != null) {
+                return connectionStatus.getLastError();
+            }
+            return null;
+        } catch (Exception e) {
+            return "Error getting connection status: " + e.getMessage();
+        }
+    }
+
+    /**
+     * Get connection state for status reporting
+     */
+    public Neo4JConnectionManager.ConnectionState getConnectionState() {
+        try {
+            Neo4JConnectionManager.ConnectionPool connectionStatus = Neo4JDriverGatewayHook
+                    .getConnectionStatus(this.name);
+
+            if (connectionStatus != null) {
+                return connectionStatus.getState();
+            }
+            return Neo4JConnectionManager.ConnectionState.DISCONNECTED;
+        } catch (Exception e) {
+            return Neo4JConnectionManager.ConnectionState.FAILED;
+        }
     }
 
     public RemoteDatabaseInstance(DatabaseRecord baseRecord, RemoteDatabaseRecord childRecord) {
@@ -41,6 +72,5 @@ public class RemoteDatabaseInstance extends Extendable {
         this.url = childRecord.getString(RemoteDatabaseRecord.CONNECTURL);
         this.username = childRecord.getString(RemoteDatabaseRecord.USERNAME);
         this.password = childRecord.getString(RemoteDatabaseRecord.PASSWORD);
-		this.exception = baseRecord.exception;
     }
 }

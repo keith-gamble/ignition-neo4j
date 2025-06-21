@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import dev.bwdesigngroup.neo4j.common.projectresources.Neo4JProperties;
 import dev.bwdesigngroup.neo4j.gateway.components.DatabaseConnector;
+import dev.bwdesigngroup.neo4j.gateway.components.Neo4JConnectionManager;
 import dev.bwdesigngroup.neo4j.gateway.records.DatabaseRecord;
 import dev.bwdesigngroup.neo4j.gateway.records.RemoteDatabaseRecord;
 import dev.bwdesigngroup.neo4j.gateway.web.Neo4JStatusRoutes;
@@ -49,30 +50,41 @@ import com.inductiveautomation.ignition.gateway.web.pages.status.StatusCategorie
 import simpleorm.dataset.SQuery;
 
 /**
- * Class which is instantiated by the Ignition platform when the module is loaded in the gateway scope.
+ * Updated Gateway Hook that uses the new Neo4JConnectionManager
+ * for proper connection lifecycle management
  */
 public class Neo4JDriverGatewayHook extends AbstractGatewayModuleHook implements ExtensionPointManager {
-	public static GatewayContext context;
-	public static Neo4JDriverGatewayHook INSTANCE;
+	private static final Logger logger = LoggerFactory.getLogger(Neo4JDriverGatewayHook.class);
 
-
-	private final Logger logger = LoggerFactory.getLogger(getClass());
-
-	private final GatewayScriptModule scriptModule = new GatewayScriptModule();
-
-	private final Map<String, DatabaseRecordType> extensionPoints = Map.of(
-		"Remote", new RemoteDatabaseRecord.RemoteDatabaseType()
-	);
-	
-	// private final Set<AbstractExtensionType> instances = new HashSet<>();
-	public static final Map<String, DatabaseConnector> CONNECTORS = new HashMap<String, DatabaseConnector>();
+	// Context and instance references
+	private static GatewayContext context;
+	private static Neo4JDriverGatewayHook INSTANCE;
 
 	/**
-	 * This sets up the status panel which we'll add to the statusPanels list. The controller will be
-	 * Neo4JStatusRoutes.java, and the model and view will be in our javascript folder. The status panel is optional
-	 * Only add if your module will provide meaningful info.
+	 * Get the gateway hook instance for access from other classes
 	 */
+	public static Neo4JDriverGatewayHook getInstance() {
+		return INSTANCE;
+	}
 
+	// NEW: Connection manager replaces static connection map
+	private Neo4JConnectionManager connectionManager;
+	private final GatewayScriptModule scriptModule = new GatewayScriptModule();
+
+	/**
+	 * Get the connection manager (for diagnostics)
+	 */
+	public Neo4JConnectionManager getConnectionManager() {
+		return connectionManager;
+	}
+
+	// Extension points configuration
+	private final Map<String, DatabaseRecordType> extensionPoints = Map.of(
+			"Remote", new RemoteDatabaseRecord.RemoteDatabaseType());
+
+	/**
+	 * Status panel configuration
+	 */
 	private static final INamedTab NEO_STATUS_PAGE = new AbstractNamedTab(
 			"neo4j",
 			StatusCategories.CONNECTIONS,
@@ -80,21 +92,16 @@ public class Neo4JDriverGatewayHook extends AbstractGatewayModuleHook implements
 
 		@Override
 		public WebMarkupContainer getPanel(String panelId) {
-			// We've set  GatewayHook.getMountPathAlias() to return neo4j, so we need to use that alias here.
 			return new BasicReactPanel(panelId, "/res/neo4j/js/neo4jstatus.js", "neo4jstatus");
 		}
 
 		@Override
-		public Iterable<String> getSearchTerms(){
+		public Iterable<String> getSearchTerms() {
 			return Arrays.asList("neo4j connections", "neo");
 		}
 	};
 
-
-	// 
-	//  This sets up the config panel
-	//  
-	
+	// Configuration setup
 	@Override
 	public List<ConfigCategory> getConfigCategories() {
 		return List.of(CONFIG_CATEGORY);
@@ -115,124 +122,184 @@ public class Neo4JDriverGatewayHook extends AbstractGatewayModuleHook implements
 		return new ArrayList<>(extensionPoints.values());
 	}
 
-
-	// /**
-	//  * We'll add an overview contributor. This is optional -- only add if your module will provide meaningful info.
-	//  */
-	// private final OverviewContributor overviewContributor = new Neo4JOverviewContributor();
-
-	// @Override
-	// public Optional<OverviewContributor> getStatusOverviewContributor() {
-	//     return Optional.of(overviewContributor);
-	// }
-
-
 	/**
-	 * This is the main entry point for the module. It is called when the module is loaded by the Ignition platform.
-	 * @param gatewayContext The gateway context.
+	 * Main setup method - called when module is loaded
 	 */
 	@Override
 	public void setup(GatewayContext gatewayContext) {
-		Neo4JDriverGatewayHook.context = gatewayContext;
+		context = gatewayContext;
 		INSTANCE = this;
 
-		// Register Neo4JDriverGatewayHook.properties by registering the Neo4JDriverGatewayHook.class with BundleUtils
-		BundleUtil.get().addBundle("Neo4J", getClass().getClassLoader(), getClass().getName().replace('.', '/'));
+		// Initialize connection manager
+		connectionManager = new Neo4JConnectionManager();
 
-		//Verify tables for persistent records if necessary
+		// Register bundles simply like the working example
+		BundleUtil.get().addBundle("Neo4J", getClass(), "Neo4JDriverGatewayHook");
+
+		// Verify database schema
 		verifySchema(context);
 
-		// listen for updates to the settings record...
+		// Set up database record listeners
+		setupRecordListeners();
+
+		logger.info("Neo4J Driver Gateway Hook setup complete");
+	}
+
+	/**
+	 * Setup listeners for database record changes
+	 */
+	private void setupRecordListeners() {
 		DatabaseRecord.META.addRecordListener(new IRecordListener<DatabaseRecord>() {
 
-			/* 
-			 * This method is called when a record is updated or added.
-			 */
-			private void updateConnector(DatabaseRecord SettingsRecord) {
-				try {
-					// If the connector is already in the map then remove it.
-					if (CONNECTORS.containsKey(SettingsRecord.getName())) {
-						CONNECTORS.remove(SettingsRecord.getName());
-					}
-
-					// Create a new connector and add it to the map.
-					RemoteDatabaseRecord remoteRecord = getDatabaseRecord(SettingsRecord);
-					DatabaseConnector dbConnector = new DatabaseConnector(SettingsRecord, remoteRecord);
-					CONNECTORS.put(SettingsRecord.getName(), dbConnector);
-				} catch (Exception e) {
-					logger.error("Error updating connector for record: " + SettingsRecord.getName(), e);
-				}
+			@Override
+			public void recordUpdated(DatabaseRecord settingsRecord) {
+				updateConnection(settingsRecord);
 			}
 
 			@Override
-			public void recordUpdated(DatabaseRecord SettingsRecord) {
-				updateConnector(SettingsRecord);
-			}
-
-			@Override
-			public void recordAdded(DatabaseRecord jSettingsRecord) {
-				updateConnector(jSettingsRecord);
+			public void recordAdded(DatabaseRecord settingsRecord) {
+				updateConnection(settingsRecord);
 			}
 
 			@Override
 			public void recordDeleted(KeyValue keyValue) {
-				// If the connector is already in the map then remove it.
-				if (CONNECTORS.containsKey(keyValue.toString())) {
-					CONNECTORS.remove(keyValue.toString());
+				String connectionName = keyValue.toString();
+				connectionManager.removeConnection(connectionName);
+				logger.info("Removed connection configuration: {}", connectionName);
+			}
+
+			/**
+			 * Update or add a connection using the connection manager
+			 */
+			private void updateConnection(DatabaseRecord settingsRecord) {
+				try {
+					RemoteDatabaseRecord remoteRecord = getDatabaseRecord(settingsRecord);
+					if (remoteRecord != null) {
+						connectionManager.addOrUpdateConnection(
+								settingsRecord.getName(),
+								settingsRecord,
+								remoteRecord);
+						logger.info("Updated connection configuration: {}", settingsRecord.getName());
+					} else {
+						logger.warn("Could not find remote database record for: {}", settingsRecord.getName());
+					}
+				} catch (Exception e) {
+					logger.error("Error updating connection for record: {}", settingsRecord.getName(), e);
 				}
 			}
 		});
-
 	}
 
+	/**
+	 * Startup - initialize connections and start connection manager
+	 */
+	@Override
+	public void startup(LicenseState licenseState) {
+		logger.info("Starting up Neo4J Driver Module");
+
+		try {
+			// Initialize the connection manager
+			connectionManager.initialize();
+
+			// Load existing connections
+			List<DatabaseRecord> baseRecords = getPersistenceInterface()
+					.query(new SQuery<>(DatabaseRecord.META));
+
+			for (DatabaseRecord settingsRecord : baseRecords) {
+				try {
+					RemoteDatabaseRecord remoteRecord = getDatabaseRecord(settingsRecord);
+					if (remoteRecord != null) {
+						connectionManager.addOrUpdateConnection(
+								settingsRecord.getName(),
+								settingsRecord,
+								remoteRecord);
+					}
+				} catch (Exception e) {
+					logger.error("Error loading connection '{}': {}",
+							settingsRecord.getName(), e.getMessage());
+				}
+			}
+
+			logger.info("Neo4J Driver Module startup complete. Loaded {} connections.",
+					connectionManager.getConnectionNames().size());
+
+		} catch (Exception e) {
+			logger.error("Error during Neo4J Driver Module startup", e);
+		}
+	}
+
+	/**
+	 * Shutdown - properly close all connections
+	 */
+	@Override
+	public void shutdown() {
+		logger.info("Shutting down Neo4J Driver Module");
+
+		if (connectionManager != null) {
+			connectionManager.shutdown();
+		}
+
+		BundleUtil.get().removeBundle("Neo4J");
+		logger.info("Neo4J Driver Module shutdown complete");
+	}
+
+	/**
+	 * Get a database connector by name - now uses connection manager
+	 */
+	public static DatabaseConnector getConnector(String connectorName) {
+		if (INSTANCE != null && INSTANCE.connectionManager != null) {
+			return INSTANCE.connectionManager.getConnection(connectorName);
+		}
+		return null;
+	}
+
+	/**
+	 * Get connection status - now uses connection manager
+	 */
+	public static Neo4JConnectionManager.ConnectionPool getConnectionStatus(String connectorName) {
+		if (INSTANCE != null && INSTANCE.connectionManager != null) {
+			return INSTANCE.connectionManager.getConnectionStatus(connectorName);
+		}
+		return null;
+	}
+
+	/**
+	 * Get all database records
+	 */
+	public static List<DatabaseRecord> getDatabaseRecords() {
+		return getPersistenceInterface().query(new SQuery<>(DatabaseRecord.META));
+	}
+
+	/**
+	 * Get list of connection names - now uses connection manager
+	 */
+	public static List<String> getConnectionNames() {
+		if (INSTANCE != null && INSTANCE.connectionManager != null) {
+			return new ArrayList<>(INSTANCE.connectionManager.getConnectionNames());
+		}
+		return new ArrayList<>();
+	}
+
+	// Utility methods
 	public static PersistenceInterface getPersistenceInterface() {
-		return Neo4JDriverGatewayHook.context.getPersistenceInterface();
+		return context.getPersistenceInterface();
 	}
 
 	private void verifySchema(GatewayContext context) {
 		try {
-			context.getSchemaUpdater().updatePersistentRecords(DatabaseRecord.META, RemoteDatabaseRecord.META);
+			context.getSchemaUpdater().updatePersistentRecords(
+					DatabaseRecord.META,
+					RemoteDatabaseRecord.META);
 		} catch (SQLException e) {
 			logger.error("Error verifying persistent record schemas for Neo4J records.", e);
 		}
 	}
 
-	private RemoteDatabaseRecord getDatabaseRecord(DatabaseRecord SettingsRecord) {
-		return Neo4JDriverGatewayHook.getPersistenceInterface().find(RemoteDatabaseRecord.META, SettingsRecord.getId());
+	private RemoteDatabaseRecord getDatabaseRecord(DatabaseRecord settingsRecord) {
+		return getPersistenceInterface().find(RemoteDatabaseRecord.META, settingsRecord.getId());
 	}
 
-	@Override
-	public void startup(LicenseState licenseState) {
-		logger.info("Starting up Neo4J Driver Module");
-		try {
-			List<DatabaseRecord> baseRecords = Neo4JDriverGatewayHook.getPersistenceInterface().query(new SQuery<>(DatabaseRecord.META));
-			for (DatabaseRecord SettingsRecord : baseRecords) {
-				RemoteDatabaseRecord remoteRecord = getDatabaseRecord(SettingsRecord);
-				try {                
-					DatabaseConnector dbConnector = new DatabaseConnector(SettingsRecord, remoteRecord);
-					CONNECTORS.put(SettingsRecord.getName(), dbConnector);
-				} catch ( Exception e ) { 
-					logger.error("Unable to instantiate connection '" + SettingsRecord.getName() + "': " + e.getMessage());
-				}
-			}     
-		} catch (Exception e) {
-			logger.error("Error loading Neo4J Driver Module", e);
-		}  
-	}
-
-	public static DatabaseConnector getConnector(String connectorName) {
-		return Neo4JDriverGatewayHook.CONNECTORS.getOrDefault(connectorName, null);
-	}
-
-	public static List<DatabaseRecord> getDatabaseRecords() {
-		return Neo4JDriverGatewayHook.getPersistenceInterface().query(new SQuery<>(DatabaseRecord.META));
-	}
-
-	@Override
-	public void shutdown() {
-		BundleUtil.get().removeBundle("Neo4J");
-	}
-
+	// Script manager setup
 	@Override
 	public void initializeScriptManager(ScriptManager manager) {
 		super.initializeScriptManager(manager);
@@ -242,13 +309,13 @@ public class Neo4JDriverGatewayHook extends AbstractGatewayModuleHook implements
 				new PropertiesFileDocProvider());
 	}
 
+	// Project settings methods
 	public static Neo4JProperties getProjectSettings(String projectName) throws ProjectInvalidException {
-		
 		RuntimeProject project = context.getProjectManager()
-		.getProject(projectName)
-		.orElseThrow() // throws NoSuchElementException if project not found
-		.validateOrThrow(); // throws ProjectInvalidException if the project is invalid
-	
+				.getProject(projectName)
+				.orElseThrow() // throws NoSuchElementException if project not found
+				.validateOrThrow(); // throws ProjectInvalidException if the project is invalid
+
 		Neo4JProperties properties = null;
 		Optional<ProjectResource> maybeResource = project.getSingletonResource(Neo4JProperties.RESOURCE_TYPE);
 		if (maybeResource.isPresent()) {
@@ -256,25 +323,26 @@ public class Neo4JDriverGatewayHook extends AbstractGatewayModuleHook implements
 			try {
 				properties = ResourceUtil.decodeOrNull(resource, context.createDeserializer(), Neo4JProperties.class);
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("Error decoding Neo4J properties", e);
 			}
 		}
-		
+
 		if (properties == null) {
 			properties = new Neo4JProperties();
-		}   
+		}
 		return properties;
 	}
 
 	public static String getDefaultScriptingProject() throws IllegalStateException {
-		String value = context.getSystemPropertiesManager().getPropertyValue(GatewaySystemProperties.GatewayScriptingProject);
+		String value = context.getSystemPropertiesManager()
+				.getPropertyValue(GatewaySystemProperties.GatewayScriptingProject);
 		if (value == null) {
 			throw new IllegalStateException("Default scripting project not set in system properties.");
 		}
 		return value;
 	}
 
-
+	// RPC handler for client communications
 	@Override
 	public Object getRPCHandler(ClientReqSession session, String projectName) {
 		Neo4JProperties projectProperties;
@@ -282,9 +350,9 @@ public class Neo4JDriverGatewayHook extends AbstractGatewayModuleHook implements
 			projectProperties = getProjectSettings(projectName);
 		} catch (ProjectInvalidException e) {
 			projectProperties = null;
-			}
+		}
 
-		if ( projectProperties != null ) {
+		if (projectProperties != null) {
 			scriptModule.setProjectProperties(projectProperties);
 		}
 
@@ -296,33 +364,24 @@ public class Neo4JDriverGatewayHook extends AbstractGatewayModuleHook implements
 		return true;
 	}
 
-
-	/**
-	 * The following methods are used by the status panel. Only add these if you are providing a status panel.
-	 */
-	// getMountPathAlias() allows us to use a shorter mount path. Use caution, because we don't want a conflict with
-	// other modules by other authors.
+	// Web interface setup
 	@Override
 	public Optional<String> getMountPathAlias() {
 		return Optional.of("neo4j");
 	}
 
-	// Use this whenever you have mounted resources
 	@Override
 	public Optional<String> getMountedResourceFolder() {
 		return Optional.of("mounted");
 	}
 
-	// Define your route handlers here
 	@Override
 	public void mountRouteHandlers(RouteGroup routes) {
 		new Neo4JStatusRoutes(context, routes).mountRoutes();
 	}
 
-	// Define your status panels here
 	@Override
 	public List<? extends INamedTab> getStatusPanels() {
 		return Collections.singletonList(NEO_STATUS_PAGE);
 	}
 }
-	

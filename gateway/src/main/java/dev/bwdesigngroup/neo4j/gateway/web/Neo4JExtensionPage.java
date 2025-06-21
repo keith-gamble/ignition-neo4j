@@ -30,7 +30,7 @@ public class Neo4JExtensionPage extends ExtensionPointPage<DatabaseRecord> {
 
 	@Override
 	protected ExtensionPointManager getExtensionPointManager() {
-		return Neo4JDriverGatewayHook.INSTANCE;
+		return Neo4JDriverGatewayHook.getInstance();
 	}
 
 	@Override
@@ -52,9 +52,22 @@ public class Neo4JExtensionPage extends ExtensionPointPage<DatabaseRecord> {
 					public String getHeaderKey() {
 						return "DatabaseRecord.Status.Name";
 					}
+				},
+
+				// Add a new calculated field for connection details
+				new ICalculatedField<DatabaseRecord>() {
+					@Override
+					public String getFieldvalue(DatabaseRecord record) {
+						return String.valueOf(record.getActiveConnections()) + "/" +
+								String.valueOf(record.getMaxConnectionPoolSize());
+					}
+
+					@Override
+					public String getHeaderKey() {
+						return "DatabaseRecord.Connections.Name";
+					}
 				});
 
 		return calcFields;
 	}
-
 }
